@@ -13,6 +13,17 @@ const CORE_QUESTS: QuestDefinition[] = [
   },
 ]
 
+const MODE_QUESTS: QuestDefinition[] = [
+  {
+    id: 'socratic_1',
+    type: 'mode',
+    title: 'Socratic Dialogue',
+    description: 'Complete 1 Socratic session',
+    target: 1,
+    xpReward: XP_RULES.COMPLETE_QUEST,
+  },
+]
+
 const STRETCH_QUESTS: QuestDefinition[] = [
   {
     id: 'easy_5',
@@ -55,12 +66,23 @@ export function generateDailyQuests(): DailyQuests {
   const dayNum = new Date().getDate()
   const stretchQuest = STRETCH_QUESTS[dayNum % STRETCH_QUESTS.length]
 
+  // Deterministic mode quest based on day
+  const modeQuest = MODE_QUESTS[dayNum % MODE_QUESTS.length]
+
   const quests: QuestProgress[] = [
     // Core quest — always present
     {
       questId: CORE_QUESTS[0].id,
       current: 0,
       target: CORE_QUESTS[0].target,
+      completed: false,
+      completedAt: null,
+    },
+    // Mode quest — rotates daily
+    {
+      questId: modeQuest.id,
+      current: 0,
+      target: modeQuest.target,
       completed: false,
       completedAt: null,
     },
@@ -82,9 +104,9 @@ export function generateDailyQuests(): DailyQuests {
 }
 
 export function getQuestDefinition(questId: string): QuestDefinition | undefined {
-  return [...CORE_QUESTS, ...STRETCH_QUESTS].find((q) => q.id === questId)
+  return [...CORE_QUESTS, ...MODE_QUESTS, ...STRETCH_QUESTS].find((q) => q.id === questId)
 }
 
 export function getAllQuestDefinitions(): QuestDefinition[] {
-  return [...CORE_QUESTS, ...STRETCH_QUESTS]
+  return [...CORE_QUESTS, ...MODE_QUESTS, ...STRETCH_QUESTS]
 }

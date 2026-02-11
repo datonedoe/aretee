@@ -39,6 +39,17 @@ export default function FlashScreen() {
     router.push('/review/all')
   }, [router])
 
+  const handleSocratic = useCallback(
+    (deckId: string) => {
+      const deck = decks.find((d) => d.id === deckId)
+      if (!deck || deck.cards.length === 0) return
+      // Pick a random card from the deck
+      const card = deck.cards[Math.floor(Math.random() * deck.cards.length)]
+      router.push(`/review/socratic?cardId=${card.id}&deckId=${deckId}`)
+    },
+    [decks, router]
+  )
+
   if (!isLoaded) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -200,7 +211,28 @@ export default function FlashScreen() {
                     {deck.cards.length} cards total
                   </Text>
                 </View>
-                <View style={{ alignItems: 'flex-end' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}>
+                  {/* Socratic button */}
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation?.()
+                      handleSocratic(deck.id)
+                    }}
+                    style={{
+                      backgroundColor: Colors.accent + '15',
+                      borderRadius: BorderRadius.full,
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <Ionicons name="school-outline" size={13} color={Colors.accent} />
+                    <Text style={{ color: Colors.accent, fontSize: 12, fontWeight: '600' }}>
+                      Ask
+                    </Text>
+                  </Pressable>
                   {dueCount > 0 ? (
                     <View
                       style={{
