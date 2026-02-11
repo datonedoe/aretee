@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Aretee",
+    "slug": "aretee",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "aretee",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D0D1A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aretee.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-document-picker"
+    ]
+  }
+}
