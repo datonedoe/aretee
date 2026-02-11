@@ -4,14 +4,16 @@
 
 ### Unified Codebase
 
-Single Expo (React Native) project targeting all platforms:
+Single Expo (React Native) project targeting the **Apple ecosystem**:
 
 | Platform | Target | How |
 |----------|--------|-----|
 | iOS | Native app | `expo run:ios` / App Store |
-| Android | Native app | `expo run:android` / Play Store |
-| Web | Browser app | `expo export:web` / deploy |
-| Desktop | macOS/Windows/Linux | Electron wrapper around web build |
+| Web (macOS) | Safari/Chrome | `expo export:web` / deploy |
+| macOS | Native (future) | Catalyst or Electron wrapper |
+| Apple Watch | Companion (future) | WatchKit extension |
+
+> **Apple-only for now.** Android/Windows/Linux may come later. This lets us leverage iOS-native features: Widgets, Live Activities, Haptics, iCloud, Shortcuts.
 
 ### Tech Stack
 
@@ -58,9 +60,16 @@ interface AudioService {
 ```
 
 Implementations:
-- `NativeFileService` — expo-file-system + expo-document-picker (iOS/Android)
-- `ElectronFileService` — Node fs via IPC (desktop)
-- `WebFileService` — File System Access API (Chrome/Edge)
+- `NativeFileService` — expo-file-system + expo-document-picker (iOS)
+- `WebFileService` — File System Access API (Safari/Chrome on Mac)
+
+### Apple-Specific Features (Phase 7+)
+- **iOS Widgets** — Streak flame, due card count, daily quest on home screen
+- **Live Activities** — Active review session on lock screen
+- **Haptic Feedback** — Satisfying taps on card flip, XP gain, achievements
+- **Shortcuts** — "Hey Siri, start my Aretee review"
+- **Apple Watch** — Streak glances, quick True/False review
+- **iCloud Sync** — Native via Obsidian vault (already working)
 
 ---
 
