@@ -50,6 +50,16 @@ export default function FlashScreen() {
     [decks, router]
   )
 
+  const handleFeynman = useCallback(
+    (deckId: string) => {
+      const deck = decks.find((d) => d.id === deckId)
+      if (!deck || deck.cards.length === 0) return
+      const card = deck.cards[Math.floor(Math.random() * deck.cards.length)]
+      router.push(`/review/feynman?cardId=${card.id}&deckId=${deckId}`)
+    },
+    [decks, router]
+  )
+
   if (!isLoaded) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -212,6 +222,27 @@ export default function FlashScreen() {
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}>
+                  {/* Feynman button */}
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation?.()
+                      handleFeynman(deck.id)
+                    }}
+                    style={{
+                      backgroundColor: Colors.warning + '15',
+                      borderRadius: BorderRadius.full,
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <Ionicons name="bulb-outline" size={13} color={Colors.warning} />
+                    <Text style={{ color: Colors.warning, fontSize: 12, fontWeight: '600' }}>
+                      Teach
+                    </Text>
+                  </Pressable>
                   {/* Socratic button */}
                   <Pressable
                     onPress={(e) => {

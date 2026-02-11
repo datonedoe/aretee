@@ -22,6 +22,14 @@ const MODE_QUESTS: QuestDefinition[] = [
     target: 1,
     xpReward: XP_RULES.COMPLETE_QUEST,
   },
+  {
+    id: 'feynman_1',
+    type: 'mode',
+    title: 'Feynman Technique',
+    description: 'Explain 1 concept in Feynman Mode',
+    target: 1,
+    xpReward: XP_RULES.COMPLETE_QUEST,
+  },
 ]
 
 const STRETCH_QUESTS: QuestDefinition[] = [
