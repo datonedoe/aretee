@@ -6,14 +6,17 @@ import { StatusBar } from 'expo-status-bar'
 import { View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useSettingsStore } from '../src/stores/settingsStore'
+import { useProfileStore } from '../src/stores/profileStore'
 import { Colors } from '../src/utils/constants'
 
 export default function RootLayout() {
   const loadSettings = useSettingsStore((s) => s.loadSettings)
+  const loadProfile = useProfileStore((s) => s.loadProfile)
 
   useEffect(() => {
     loadSettings()
-  }, [loadSettings])
+    loadProfile()
+  }, [loadSettings, loadProfile])
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

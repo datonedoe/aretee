@@ -4,6 +4,7 @@ import { SRSEngine } from '../services/srs/engine'
 import { CardWriter } from '../services/srs/writer'
 import { getFileService } from '../services/platform'
 import { useDeckStore } from './deckStore'
+import { useProfileStore } from './profileStore'
 
 interface ReviewSession {
   deckId: string
@@ -38,6 +39,7 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
   session: null,
 
   startSession: (deckId, cards, deckName) => {
+    useProfileStore.getState().resetSessionTracking()
     set({
       session: {
         deckId,
@@ -108,6 +110,9 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
         lastModified: new Date(),
       })
     }
+
+    // Track gamification
+    useProfileStore.getState().onCardReviewed(response, session.deckId)
 
     const result: ReviewSessionResult = {
       cardId: card.id,

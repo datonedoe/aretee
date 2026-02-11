@@ -1,11 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { View, Text, Pressable, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { ReviewResponse, ResponseColors } from '../src/types'
+import { ReviewResponse, ResponseColors, AchievementDefinition } from '../src/types'
 import { useReviewStore } from '../src/stores/reviewStore'
+import { useProfileStore } from '../src/stores/profileStore'
+import { useDeckStore } from '../src/stores/deckStore'
 import { Colors, Spacing, BorderRadius } from '../src/utils/constants'
+import { XPBar } from '../src/components/gamification'
+import { LevelUpCelebration } from '../src/components/gamification/LevelUpCelebration'
+import { AchievementToast } from '../src/components/gamification/AchievementToast'
+import { playSound } from '../src/services/audio/sounds'
 
 interface SessionSummary {
   deckName: string
@@ -14,13 +20,23 @@ interface SessionSummary {
   hard: number
   good: number
   easy: number
-  duration: number // seconds
+  duration: number
+  xpEarned: number
 }
 
 export default function ResultsScreen() {
   const router = useRouter()
   const endSession = useReviewStore((s) => s.endSession)
+  const sessionXP = useProfileStore((s) => s.sessionXP)
+  const consumeEvents = useProfileStore((s) => s.consumeEvents)
+  const onSessionEnd = useProfileStore((s) => s.onSessionEnd)
+  const onDeckCompleted = useProfileStore((s) => s.onDeckCompleted)
+  const { decks } = useDeckStore()
+
   const [summary, setSummary] = useState<SessionSummary | null>(null)
+  const [levelUpLevel, setLevelUpLevel] = useState<number | null>(null)
+  const [achievementQueue, setAchievementQueue] = useState<AchievementDefinition[]>([])
+  const [currentAchievement, setCurrentAchievement] = useState<AchievementDefinition | null>(null)
 
   useEffect(() => {
     const session = endSession()
@@ -43,13 +59,69 @@ export default function ResultsScreen() {
       (Date.now() - session.startedAt.getTime()) / 1000
     )
 
+    const accuracy =
+      session.results.length > 0
+        ? Math.round(
+            ((counts.good + counts.easy) / session.results.length) * 100
+          )
+        : 0
+
+    const xpSnapshot = sessionXP
+
     setSummary({
       deckName: session.deckName,
       totalCards: session.results.length,
       ...counts,
       duration,
+      xpEarned: xpSnapshot,
+    })
+
+    // Award deck completion XP
+    onDeckCompleted()
+
+    // Check for level-ups from card reviews
+    const events = consumeEvents()
+    for (const e of events) {
+      if (e.leveledUp && e.newLevel) {
+        setLevelUpLevel(e.newLevel)
+        playSound('levelUp')
+        break
+      }
+    }
+
+    // Trigger session-end gamification (achievements, perfect day)
+    onSessionEnd(
+      session.results.length,
+      duration,
+      accuracy,
+      decks.length
+    ).then((event) => {
+      if (event.newAchievements.length > 0) {
+        setAchievementQueue(event.newAchievements)
+        playSound('achievement')
+      }
+      if (event.leveledUp && event.newLevel) {
+        setLevelUpLevel(event.newLevel)
+        playSound('levelUp')
+      }
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show achievements one at a time
+  useEffect(() => {
+    if (achievementQueue.length > 0 && !currentAchievement) {
+      setCurrentAchievement(achievementQueue[0])
+      setAchievementQueue((q) => q.slice(1))
+    }
+  }, [achievementQueue, currentAchievement])
+
+  const dismissAchievement = useCallback(() => {
+    setCurrentAchievement(null)
+  }, [])
+
+  const dismissLevelUp = useCallback(() => {
+    setLevelUpLevel(null)
+  }, [])
 
   if (!summary) return null
 
@@ -66,6 +138,22 @@ export default function ResultsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
+      {/* Achievement toast */}
+      {currentAchievement && (
+        <AchievementToast
+          achievement={currentAchievement}
+          onDismiss={dismissAchievement}
+        />
+      )}
+
+      {/* Level up celebration */}
+      {levelUpLevel && (
+        <LevelUpCelebration
+          newLevel={levelUpLevel}
+          onDismiss={dismissLevelUp}
+        />
+      )}
+
       <ScrollView
         contentContainerStyle={{
           padding: Spacing.lg,
@@ -107,12 +195,38 @@ export default function ResultsScreen() {
           {summary.deckName}
         </Text>
 
+        {/* XP Earned */}
+        <View
+          style={{
+            backgroundColor: Colors.primary + '20',
+            borderRadius: BorderRadius.lg,
+            paddingHorizontal: Spacing.lg,
+            paddingVertical: Spacing.md,
+            marginTop: Spacing.lg,
+            borderWidth: 1,
+            borderColor: Colors.primary + '40',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: Spacing.sm,
+          }}
+        >
+          <Ionicons name="star" size={24} color={Colors.accent} />
+          <Text style={{ color: Colors.accent, fontSize: 24, fontWeight: '800' }}>
+            +{summary.xpEarned} XP
+          </Text>
+        </View>
+
+        {/* XP Bar */}
+        <View style={{ width: '100%', marginTop: Spacing.md }}>
+          <XPBar compact />
+        </View>
+
         {/* Stats Row */}
         <View
           style={{
             flexDirection: 'row',
             gap: Spacing.md,
-            marginTop: Spacing.xl,
+            marginTop: Spacing.lg,
             width: '100%',
           }}
         >
