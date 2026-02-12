@@ -41,7 +41,6 @@ export default function ResultsScreen() {
   useEffect(() => {
     const session = endSession()
     if (!session) {
-      router.replace('/(tabs)')
       return
     }
 
@@ -123,7 +122,71 @@ export default function ResultsScreen() {
     setLevelUpLevel(null)
   }, [])
 
-  if (!summary) return null
+  if (!summary) {
+    // No recent review session - show friendly message
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: Spacing.xl,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: Colors.surface,
+              borderRadius: BorderRadius.lg,
+              padding: Spacing.xl,
+              borderWidth: 1,
+              borderColor: Colors.border,
+              alignItems: 'center',
+              maxWidth: 400,
+            }}
+          >
+            <Ionicons name="document-text-outline" size={48} color={Colors.textSecondary} />
+            <Text
+              style={{
+                color: Colors.text,
+                fontSize: 18,
+                fontWeight: '600',
+                textAlign: 'center',
+                marginTop: Spacing.md,
+              }}
+            >
+              No Recent Review Session
+            </Text>
+            <Text
+              style={{
+                color: Colors.textSecondary,
+                fontSize: 14,
+                textAlign: 'center',
+                marginTop: Spacing.sm,
+                lineHeight: 20,
+              }}
+            >
+              Complete a review session to see your results here.
+            </Text>
+            <Pressable
+              onPress={() => router.replace('/(tabs)')}
+              style={{
+                backgroundColor: Colors.primary,
+                paddingHorizontal: Spacing.lg,
+                paddingVertical: Spacing.md,
+                borderRadius: BorderRadius.md,
+                marginTop: Spacing.lg,
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>
+                Go to Decks
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </SafeAreaView>
+    )
+  }
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)

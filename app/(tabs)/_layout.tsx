@@ -24,6 +24,8 @@ export default function TabLayout() {
             height: 85,
             paddingBottom: 30,
             paddingTop: 8,
+            maxWidth: 768,
+            alignSelf: 'center',
           },
           tabBarActiveTintColor: Colors.primary,
           tabBarInactiveTintColor: Colors.textSecondary,

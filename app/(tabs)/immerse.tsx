@@ -447,6 +447,82 @@ export default function ImmerseScreen() {
   if (error && feedItems.length === 0) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
+        {/* Header */}
+        <View
+          style={{
+            paddingHorizontal: Spacing.lg,
+            paddingVertical: Spacing.sm,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <View>
+            <Text style={{ color: Colors.text, fontSize: 22, fontWeight: '800' }}>🌍 Immersion Feed</Text>
+            <Text style={{ color: Colors.textSecondary, fontSize: 12 }}>
+              Level {Math.round(difficulty)} · {language.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+
+        {/* Content type filter */}
+        <View
+          style={{
+            flexDirection: 'row',
+            paddingHorizontal: Spacing.md,
+            paddingBottom: Spacing.sm,
+            gap: 6,
+          }}
+        >
+          <Pressable
+            onPress={() => {
+              setSelectedType(undefined)
+              loadFeed(undefined)
+            }}
+            style={{
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: BorderRadius.full,
+              backgroundColor: selectedType === undefined ? Colors.primary : Colors.surface,
+            }}
+          >
+            <Text
+              style={{
+                color: selectedType === undefined ? '#fff' : Colors.textSecondary,
+                fontSize: 12,
+                fontWeight: '600',
+              }}
+            >
+              All
+            </Text>
+          </Pressable>
+          {CONTENT_TYPES.map((ct) => (
+            <Pressable
+              key={ct}
+              onPress={() => {
+                setSelectedType(ct)
+                loadFeed(ct)
+              }}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: BorderRadius.full,
+                backgroundColor: selectedType === ct ? Colors.primary : Colors.surface,
+              }}
+            >
+              <Text
+                style={{
+                  color: selectedType === ct ? '#fff' : Colors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: '600',
+                }}
+              >
+                {CONTENT_TYPE_LABELS[ct]}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
         <View
           style={{
             flex: 1,
@@ -455,29 +531,52 @@ export default function ImmerseScreen() {
             padding: Spacing.xl,
           }}
         >
-          <Ionicons name="alert-circle-outline" size={48} color={Colors.error} />
-          <Text
+          <View
             style={{
-              color: Colors.error,
-              fontSize: 16,
-              marginTop: Spacing.md,
-              textAlign: 'center',
+              backgroundColor: Colors.accent + '15',
+              borderRadius: BorderRadius.lg,
+              padding: Spacing.xl,
+              borderWidth: 1,
+              borderColor: Colors.accent + '40',
+              width: '100%',
+              maxWidth: 400,
             }}
           >
-            {error}
-          </Text>
-          <Pressable
-            onPress={() => loadFeed(selectedType)}
-            style={{
-              backgroundColor: Colors.primary,
-              paddingHorizontal: Spacing.lg,
-              paddingVertical: Spacing.md,
-              borderRadius: BorderRadius.md,
-              marginTop: Spacing.lg,
-            }}
-          >
-            <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Retry</Text>
-          </Pressable>
+            <Text
+              style={{
+                color: Colors.text,
+                fontSize: 18,
+                fontWeight: '600',
+                textAlign: 'center',
+                marginBottom: Spacing.md,
+              }}
+            >
+              Backend Disconnected
+            </Text>
+            <Text
+              style={{
+                color: Colors.textSecondary,
+                fontSize: 14,
+                textAlign: 'center',
+                marginBottom: Spacing.lg,
+                lineHeight: 20,
+              }}
+            >
+              Start the backend server to see AI-generated immersion content with authentic dialogue, stories, and conversations.
+            </Text>
+            <Pressable
+              onPress={() => loadFeed(selectedType)}
+              style={{
+                backgroundColor: Colors.primary,
+                paddingHorizontal: Spacing.lg,
+                paddingVertical: Spacing.md,
+                borderRadius: BorderRadius.md,
+                alignSelf: 'center',
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Try Again</Text>
+            </Pressable>
+          </View>
         </View>
       </SafeAreaView>
     )
