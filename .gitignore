@@ -28,6 +28,23 @@ yarn-error.*
 
 # macOS
 .DS_Store
+
+# Environment & secrets (NEVER commit these)
+.env
+.env.*
+.env.local
+.env.production
+!.env.example
+
+# Python
+backend/venv/
+backend/__pycache__/
+backend/output/
+*.pyc
+
+# API keys / credentials
+**/secrets/
+**/credentials/
 *.pem
 
 # local env files
