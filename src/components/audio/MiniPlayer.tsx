@@ -1,11 +1,6 @@
-import { View, Text, Pressable } from 'react-native'
+import { View, Text, Pressable, Animated } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useAudioStore } from '../../stores/audioStore'
 import { WaveformVisualizer } from './WaveformVisualizer'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
@@ -30,19 +25,17 @@ export function MiniPlayer({ onExpand }: MiniPlayerProps) {
   } = useAudioStore()
 
   const episode = getCurrentEpisode()
-  const translateY = useSharedValue(100)
+  const translateY = useRef(new Animated.Value(100)).current
 
   useEffect(() => {
-    translateY.value = withSpring(episode ? 0 : 100, {
+    Animated.spring(translateY, {
+      toValue: episode ? 0 : 100,
       damping: 20,
       stiffness: 200,
       mass: 0.5,
-    })
+      useNativeDriver: true,
+    }).start()
   }, [episode, translateY])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }))
 
   if (!episode) return null
 
@@ -59,8 +52,8 @@ export function MiniPlayer({ onExpand }: MiniPlayerProps) {
           backgroundColor: Colors.surface,
           borderTopWidth: 1,
           borderTopColor: Colors.border,
+          transform: [{ translateY }],
         },
-        animatedStyle,
       ]}
     >
       {/* Progress bar */}
