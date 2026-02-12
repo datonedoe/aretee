@@ -33,9 +33,29 @@
 - Auto-fetch cron (every 3 days) + weekly digest cron (Sundays 10am)
 - Podcast generation from bookmark content (5 episodes)
 
-### In Progress (Overnight Builds)
-- [ ] Sprint 8 — FSRS algorithm upgrade (sub-agent building)
-- [ ] Sprint 11 — Immersion feed with AI content generation (sub-agent building)
+### Sprint 8 — FSRS Algorithm Upgrade ✅
+- Replaced SM-2 with FSRS-5 (three-component memory model: Difficulty, Stability, Retrievability)
+- 19 default parameters, 20-30% fewer reviews for same retention
+- Response latency tracking (hesitation = weaker encoding)
+- Configurable retention target (0.7-0.97, default 0.9)
+- SM-2 → FSRS migration utility (preserves history)
+- Review Analytics dashboard (14-day forecast, retention rate, maturity distribution)
+- New Analytics tab
+- Extended markdown format (backward compatible)
+- **Commit:** `3eaeda9`
+
+### Sprint 11 — Immersion Feed ✅
+- TikTok-style vertical scroll feed UI
+- 5 AI content types: dialogue, news, cultural, overheard, street slang
+- Difficulty auto-calibration via interaction feedback (moving average)
+- Long-press any word → Claude translates → add to flashcard deck
+- Edge TTS audio per feed item
+- 9 languages, regional Spanish variants (Mexico, Spain, Argentina, Colombia)
+- Profanity warnings + regional tags
+- New "Immerse" tab
+- **Commit:** `9fb402e`
+
+### Still In Progress
 - [ ] 5 podcast episodes from X bookmarks (sub-agent building)
 
 ---
