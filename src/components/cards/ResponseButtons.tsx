@@ -1,5 +1,5 @@
 import { View, Text, Pressable, Platform } from 'react-native'
-import { ReviewResponse, ResponseColors } from '../../types'
+import { ReviewResponse, ResponseColors, CardState } from '../../types'
 import { SRSEngine } from '../../services/srs/engine'
 import { formatInterval } from '../../utils/dates'
 import { Spacing, BorderRadius, Colors } from '../../utils/constants'
@@ -9,6 +9,13 @@ interface ResponseButtonsProps {
   currentEase: number
   reviewCount: number
   onResponse: (response: ReviewResponse) => void
+  // FSRS fields
+  currentDifficulty?: number
+  currentStability?: number
+  currentState?: CardState
+  lastReview?: Date | null
+  currentLapses?: number
+  desiredRetention?: number
 }
 
 const RESPONSE_LABELS: Record<ReviewResponse, string> = {
@@ -30,8 +37,24 @@ export function ResponseButtons({
   currentEase,
   reviewCount,
   onResponse,
+  currentDifficulty = 0,
+  currentStability = 0,
+  currentState = CardState.New,
+  lastReview = null,
+  currentLapses = 0,
+  desiredRetention = 0.9,
 }: ResponseButtonsProps) {
-  const previews = SRSEngine.getPreviewIntervals(currentInterval, currentEase, reviewCount)
+  const previews = SRSEngine.getPreviewIntervals(
+    currentInterval,
+    currentEase,
+    reviewCount,
+    currentDifficulty,
+    currentStability,
+    currentState,
+    lastReview,
+    currentLapses,
+    desiredRetention
+  )
 
   return (
     <View style={{ width: '100%', gap: Spacing.sm }}>

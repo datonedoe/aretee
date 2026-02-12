@@ -6,6 +6,8 @@ export interface CardUpdate {
   date: Date
   interval: number
   ease: number
+  difficulty?: number
+  stability?: number
 }
 
 export class CardWriter {
@@ -14,7 +16,9 @@ export class CardWriter {
     card: Card,
     newDate: Date,
     newInterval: number,
-    newEase: number
+    newEase: number,
+    newDifficulty?: number,
+    newStability?: number
   ): string {
     const lines = content.split('\n')
 
@@ -22,7 +26,13 @@ export class CardWriter {
       throw new Error('Invalid line range for card')
     }
 
-    const newMetadata = SRSEngine.formatSchedulingMetadata(newDate, newInterval, newEase)
+    const newMetadata = SRSEngine.formatSchedulingMetadata(
+      newDate,
+      newInterval,
+      newEase,
+      newDifficulty,
+      newStability
+    )
     const metadataPattern = /<!--SR:![^>]+-->/
 
     let metadataUpdated = false
@@ -79,7 +89,9 @@ export class CardWriter {
         const newMetadata = SRSEngine.formatSchedulingMetadata(
           update.date,
           update.interval,
-          update.ease
+          update.ease,
+          update.difficulty,
+          update.stability
         )
 
         const metadataPattern = /<!--SR:![^>]+-->/

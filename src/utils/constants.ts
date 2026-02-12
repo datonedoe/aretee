@@ -1,7 +1,32 @@
-// SRS Algorithm Constants
+// SRS Algorithm Constants (legacy SM-2)
 export const DEFAULT_EASE = 250
 export const MINIMUM_EASE = 130
 export const FUZZ_FACTOR = 0.05
+
+// FSRS-5 default parameters (w[0..18])
+export const FSRS_PARAMS: readonly number[] = [
+  0.40255, 1.18385, 3.173, 15.69105, // w[0-3]: initial stability per rating
+  7.1949,  // w[4]: initial difficulty offset
+  0.5345,  // w[5]: initial difficulty slope
+  1.4604,  // w[6]: difficulty update rate
+  0.0046,  // w[7]: mean reversion weight
+  1.54575, // w[8]: recall stability increase base
+  0.1192,  // w[9]: recall stability S exponent
+  1.01925, // w[10]: recall stability R factor
+  1.9395,  // w[11]: forget stability D coeff
+  0.11,    // w[12]: forget stability D exponent
+  0.29605, // w[13]: forget stability S exponent
+  2.2698,  // w[14]: forget stability R factor
+  0.2315,  // w[15]: hard penalty
+  2.9898,  // w[16]: easy bonus
+  0.51655, // w[17]: short-term stability rate
+  0.6621,  // w[18]: short-term stability offset
+] as const
+
+// FSRS retention target
+export const DEFAULT_DESIRED_RETENTION = 0.9
+export const MIN_DESIRED_RETENTION = 0.7
+export const MAX_DESIRED_RETENTION = 0.97
 
 // Design Tokens
 export const Colors = {
@@ -42,4 +67,5 @@ export const SETTINGS_KEYS = {
   MINIMUM_EASE: 'minimumEase',
   FUZZ_ENABLED: 'fuzzEnabled',
   DAILY_NEW_LIMIT: 'dailyNewLimit',
+  DESIRED_RETENTION: 'desiredRetention',
 } as const

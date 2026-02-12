@@ -73,6 +73,8 @@ export class CardParser {
             nextReviewDate: scheduling?.date ?? null,
             interval: scheduling?.interval ?? null,
             ease: scheduling?.ease ?? null,
+            difficulty: scheduling?.difficulty ?? null,
+            stability: scheduling?.stability ?? null,
             isBidirectional,
           }
           cards.push(card)
@@ -86,6 +88,8 @@ export class CardParser {
               nextReviewDate: scheduling?.date ?? null,
               interval: scheduling?.interval ?? null,
               ease: scheduling?.ease ?? null,
+              difficulty: scheduling?.difficulty ?? null,
+              stability: scheduling?.stability ?? null,
               isBidirectional: true,
             }
             cards.push(reverseCard)
@@ -105,8 +109,8 @@ export class CardParser {
     const cards: ParsedCard[] = []
     const lines = content.split('\n')
 
-    const triplePattern = /^(.+?):::(.+?)(?:<!--SR:![\d-]+,\d+,\d+-->)?$/
-    const doublePattern = /^(.+?)::([^:].+?)(?:<!--SR:![\d-]+,\d+,\d+-->)?$/
+    const triplePattern = /^(.+?):::(.+?)(?:<!--SR:![^>]+-->)?$/
+    const doublePattern = /^(.+?)::([^:].+?)(?:<!--SR:![^>]+-->)?$/
 
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
       const line = lines[lineIndex]
@@ -125,6 +129,8 @@ export class CardParser {
           nextReviewDate: scheduling?.date ?? null,
           interval: scheduling?.interval ?? null,
           ease: scheduling?.ease ?? null,
+          difficulty: scheduling?.difficulty ?? null,
+          stability: scheduling?.stability ?? null,
           isBidirectional: true,
         }
         cards.push(card)
@@ -137,6 +143,8 @@ export class CardParser {
           nextReviewDate: scheduling?.date ?? null,
           interval: scheduling?.interval ?? null,
           ease: scheduling?.ease ?? null,
+          difficulty: scheduling?.difficulty ?? null,
+          stability: scheduling?.stability ?? null,
           isBidirectional: true,
         }
         cards.push(reverseCard)
@@ -154,6 +162,8 @@ export class CardParser {
           nextReviewDate: scheduling?.date ?? null,
           interval: scheduling?.interval ?? null,
           ease: scheduling?.ease ?? null,
+          difficulty: scheduling?.difficulty ?? null,
+          stability: scheduling?.stability ?? null,
           isBidirectional: false,
         }
         cards.push(card)
@@ -232,6 +242,8 @@ export class CardParser {
           nextReviewDate: scheduling?.date ?? null,
           interval: scheduling?.interval ?? null,
           ease: scheduling?.ease ?? null,
+          difficulty: scheduling?.difficulty ?? null,
+          stability: scheduling?.stability ?? null,
           isBidirectional: false,
         }
         cards.push(card)
@@ -241,7 +253,14 @@ export class CardParser {
     return cards
   }
 
-  private extractAndRemoveScheduling(text: string): { text: string; date: Date; interval: number; ease: number } | null {
+  private extractAndRemoveScheduling(text: string): {
+    text: string
+    date: Date
+    interval: number
+    ease: number
+    difficulty?: number
+    stability?: number
+  } | null {
     const scheduling = SRSEngine.parseSchedulingMetadata(text)
     if (!scheduling) return null
 
@@ -252,6 +271,8 @@ export class CardParser {
       date: scheduling.date,
       interval: scheduling.interval,
       ease: scheduling.ease,
+      difficulty: scheduling.difficulty,
+      stability: scheduling.stability,
     }
   }
 }

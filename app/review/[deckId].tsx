@@ -5,17 +5,20 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { useDeckStore } from '../../src/stores/deckStore'
 import { useReviewStore } from '../../src/stores/reviewStore'
+import { useSettingsStore } from '../../src/stores/settingsStore'
 import { FlashCard } from '../../src/components/cards/FlashCard'
 import { ResponseButtons } from '../../src/components/cards/ResponseButtons'
 import { CardProgress } from '../../src/components/cards/CardProgress'
 import { useKeyboardShortcuts } from '../../src/hooks/useKeyboardShortcuts'
 import { ReviewResponse, ResponseKeyBindings, isCardDue } from '../../src/types'
-import { Colors, Spacing } from '../../src/utils/constants'
+import { SRSEngine } from '../../src/services/srs/engine'
+import { Colors, Spacing, BorderRadius } from '../../src/utils/constants'
 
 export default function ReviewScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>()
   const router = useRouter()
   const { decks, getAllDueCards, getDeck } = useDeckStore()
+  const { desiredRetention } = useSettingsStore()
   const {
     session,
     startSession,
@@ -53,7 +56,6 @@ export default function ReviewScreen() {
     async (response: ReviewResponse) => {
       await answerCard(response)
 
-      // Check if session is complete after answering
       const nextCard = useReviewStore.getState().getCurrentCard()
       if (!nextCard) {
         router.replace('/results')
@@ -80,7 +82,6 @@ export default function ReviewScreen() {
     [session, currentCard, flipCard, handleResponse]
   )
 
-  // Keyboard shortcuts for web
   useKeyboardShortcuts(handleKeyPress)
 
   if (!session || !currentCard) {
@@ -103,6 +104,19 @@ export default function ReviewScreen() {
     )
   }
 
+  // Calculate current retrievability for display
+  const elapsedDays =
+    currentCard.last_review != null
+      ? Math.max(
+          0,
+          (Date.now() - new Date(currentCard.last_review).getTime()) / (1000 * 60 * 60 * 24)
+        )
+      : 0
+  const retrievability =
+    currentCard.stability > 0
+      ? SRSEngine.retrievability(elapsedDays, currentCard.stability)
+      : 0
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
       {/* Header */}
@@ -123,11 +137,38 @@ export default function ReviewScreen() {
         </View>
       </View>
 
-      {/* Deck name */}
+      {/* Deck name + FSRS info */}
       <View style={{ paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm }}>
         <Text style={{ color: Colors.textSecondary, fontSize: 13 }}>
           {session.deckName}
         </Text>
+        {currentCard.stability > 0 && (
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: Spacing.md,
+              marginTop: Spacing.xs,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Ionicons name="shield-checkmark-outline" size={12} color={Colors.accent} />
+              <Text style={{ color: Colors.accent, fontSize: 11 }}>
+                S: {currentCard.stability.toFixed(1)}d
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Ionicons name="analytics-outline" size={12} color={retrievability > 0.85 ? Colors.success : retrievability > 0.7 ? Colors.warning : Colors.error} />
+              <Text
+                style={{
+                  color: retrievability > 0.85 ? Colors.success : retrievability > 0.7 ? Colors.warning : Colors.error,
+                  fontSize: 11,
+                }}
+              >
+                R: {Math.round(retrievability * 100)}%
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
 
       {/* Card */}
@@ -148,6 +189,12 @@ export default function ReviewScreen() {
             currentEase={currentCard.ease}
             reviewCount={currentCard.reviewCount}
             onResponse={handleResponse}
+            currentDifficulty={currentCard.difficulty}
+            currentStability={currentCard.stability}
+            currentState={currentCard.state}
+            lastReview={currentCard.last_review}
+            currentLapses={currentCard.lapses}
+            desiredRetention={desiredRetention}
           />
         ) : (
           <Pressable

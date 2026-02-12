@@ -1,10 +1,11 @@
 import { create } from 'zustand'
-import { Card, ReviewResponse, ReviewResult, SyncStatus } from '../types'
+import { Card, ReviewResponse, ReviewResult, SyncStatus, CardState } from '../types'
 import { SRSEngine } from '../services/srs/engine'
 import { CardWriter } from '../services/srs/writer'
 import { getFileService } from '../services/platform'
 import { useDeckStore } from './deckStore'
 import { useProfileStore } from './profileStore'
+import { useSettingsStore } from './settingsStore'
 
 interface ReviewSession {
   deckId: string
@@ -14,12 +15,14 @@ interface ReviewSession {
   isFlipped: boolean
   results: ReviewSessionResult[]
   startedAt: Date
+  cardShownAt: number | null
 }
 
 interface ReviewSessionResult {
   cardId: string
   response: ReviewResponse
   reviewResult: ReviewResult
+  responseTimeMs: number | null
 }
 
 interface ReviewState {
@@ -49,6 +52,7 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
         isFlipped: false,
         results: [],
         startedAt: new Date(),
+        cardShownAt: null,
       },
     })
   },
@@ -57,7 +61,12 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
     set((state) => {
       if (!state.session) return state
       return {
-        session: { ...state.session, isFlipped: !state.session.isFlipped },
+        session: {
+          ...state.session,
+          isFlipped: !state.session.isFlipped,
+          // Record when the answer was shown (for response time tracking)
+          cardShownAt: !state.session.isFlipped ? Date.now() : state.session.cardShownAt,
+        },
       }
     })
   },
@@ -69,13 +78,45 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
     const card = session.cards[session.currentIndex]
     if (!card) return
 
-    // Calculate new scheduling
+    // Calculate response time (time from flip to answer)
+    const responseTimeMs = session.cardShownAt != null ? Date.now() - session.cardShownAt : null
+
+    const { desiredRetention } = useSettingsStore.getState()
+
+    // Calculate new scheduling with FSRS
     const reviewResult = SRSEngine.calculateNextReview(
       card.interval,
       card.ease,
       response,
-      card.reviewCount
+      card.reviewCount,
+      true,
+      card.difficulty,
+      card.stability,
+      card.state,
+      card.last_review,
+      card.lapses,
+      desiredRetention,
+      responseTimeMs
     )
+
+    const cardUpdates: Partial<Card> = {
+      nextReviewDate: reviewResult.nextReviewDate,
+      interval: reviewResult.newInterval,
+      ease: reviewResult.newEase,
+      reviewCount: card.reviewCount + 1,
+      syncStatus: SyncStatus.Synced,
+      lastModified: new Date(),
+      difficulty: reviewResult.newDifficulty,
+      stability: reviewResult.newStability,
+      retrievability: reviewResult.retrievability,
+      elapsed_days: reviewResult.elapsed_days,
+      scheduled_days: reviewResult.scheduled_days,
+      last_review: new Date(),
+      reps: card.reps + 1,
+      lapses: reviewResult.lapses,
+      state: reviewResult.state,
+      responseTimeMs,
+    }
 
     // Write back to file
     try {
@@ -86,28 +127,17 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
         card,
         reviewResult.nextReviewDate,
         reviewResult.newInterval,
-        reviewResult.newEase
+        reviewResult.newEase,
+        reviewResult.newDifficulty,
+        reviewResult.newStability
       )
       await fileService.writeFile(card.sourceFilePath, updatedContent)
 
-      // Update card in deck store
-      useDeckStore.getState().updateCard(session.deckId, card.id, {
-        nextReviewDate: reviewResult.nextReviewDate,
-        interval: reviewResult.newInterval,
-        ease: reviewResult.newEase,
-        reviewCount: card.reviewCount + 1,
-        syncStatus: SyncStatus.Synced,
-        lastModified: new Date(),
-      })
+      useDeckStore.getState().updateCard(session.deckId, card.id, cardUpdates)
     } catch {
-      // Mark as pending sync if write fails
       useDeckStore.getState().updateCard(session.deckId, card.id, {
-        nextReviewDate: reviewResult.nextReviewDate,
-        interval: reviewResult.newInterval,
-        ease: reviewResult.newEase,
-        reviewCount: card.reviewCount + 1,
+        ...cardUpdates,
         syncStatus: SyncStatus.PendingSync,
-        lastModified: new Date(),
       })
     }
 
@@ -118,6 +148,7 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
       cardId: card.id,
       response,
       reviewResult,
+      responseTimeMs,
     }
 
     set((state) => {
@@ -129,6 +160,7 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
           ...state.session,
           currentIndex: nextIndex,
           isFlipped: false,
+          cardShownAt: null,
           results: [...state.session.results, result],
         },
       }

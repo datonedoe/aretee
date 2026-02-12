@@ -1,6 +1,14 @@
 import { SyncStatus } from './enums'
 import { v4 as uuidv4 } from 'uuid'
 
+/** FSRS card state */
+export enum CardState {
+  New = 0,
+  Learning = 1,
+  Review = 2,
+  Relearning = 3,
+}
+
 export interface Card {
   id: string
   question: string
@@ -15,6 +23,17 @@ export interface Card {
   syncStatus: SyncStatus
   lastModified: Date
   deckId: string
+  // FSRS fields
+  difficulty: number
+  stability: number
+  retrievability: number
+  elapsed_days: number
+  scheduled_days: number
+  last_review: Date | null
+  reps: number
+  lapses: number
+  state: CardState
+  responseTimeMs: number | null
 }
 
 export interface ParsedCard {
@@ -25,6 +44,9 @@ export interface ParsedCard {
   nextReviewDate: Date | null
   interval: number | null
   ease: number | null
+  // FSRS parsed fields
+  difficulty: number | null
+  stability: number | null
   isBidirectional: boolean
 }
 
@@ -40,6 +62,14 @@ export interface ReviewResult {
   nextReviewDate: Date
   newInterval: number
   newEase: number
+  // FSRS results
+  newDifficulty: number
+  newStability: number
+  retrievability: number
+  elapsed_days: number
+  scheduled_days: number
+  state: CardState
+  lapses: number
 }
 
 export function isCardDue(card: Card): boolean {
@@ -66,5 +96,15 @@ export function createCard(
     syncStatus: SyncStatus.Synced,
     lastModified: now,
     deckId,
+    difficulty: parsed.difficulty ?? 0,
+    stability: parsed.stability ?? 0,
+    retrievability: 0,
+    elapsed_days: 0,
+    scheduled_days: 0,
+    last_review: null,
+    reps: 0,
+    lapses: 0,
+    state: CardState.New,
+    responseTimeMs: null,
   }
 }
