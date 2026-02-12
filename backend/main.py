@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from routers import audio
+from routers import audio, immersion
 
 app = FastAPI(title="Aretee Audio Backend", version="1.0.0")
 
@@ -25,6 +25,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 app.mount("/audio", StaticFiles(directory=str(OUTPUT_DIR)), name="audio")
 
 app.include_router(audio.router, prefix="/api/audio", tags=["audio"])
+app.include_router(immersion.router, prefix="/api/immersion", tags=["immersion"])
 
 
 @app.get("/api/health")

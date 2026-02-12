@@ -52,6 +52,15 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="immerse"
+          options={{
+            title: 'Immerse',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="earth" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="skinup"
           options={{
             title: 'SkinUP',
