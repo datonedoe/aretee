@@ -52,6 +52,15 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="skinup"
+          options={{
+            title: 'SkinUP',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="skull" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
