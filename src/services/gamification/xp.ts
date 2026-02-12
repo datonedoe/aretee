@@ -8,6 +8,7 @@ export const XP_RULES = {
   COMPLETE_QUEST: 200,
   PERFECT_DAY: 500,
   COMEBACK_BONUS: 50, // first review after 7+ day gap
+  LISTEN_EPISODE: 75,
 } as const
 
 export function calculateReviewXP(response: ReviewResponse): number {

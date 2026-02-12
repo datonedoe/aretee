@@ -1,6 +1,6 @@
 import { Platform } from 'react-native'
 
-type SoundType = 'xp' | 'levelUp' | 'achievement' | 'insight' | 'feynman'
+type SoundType = 'xp' | 'levelUp' | 'achievement' | 'insight' | 'feynman' | 'podcast'
 
 let audioContext: AudioContext | null = null
 
@@ -73,6 +73,16 @@ function playFeynmanSound() {
   })
 }
 
+function playPodcastSound() {
+  const ctx = getAudioContext()
+  if (!ctx) return
+  // Gentle completion chime — podcast finished
+  const notes = [659, 784, 1047] // E5 G5 C6
+  notes.forEach((freq, i) => {
+    setTimeout(() => playTone(freq, 0.25, 'sine', 0.1 - i * 0.02), i * 150)
+  })
+}
+
 export function playSound(type: SoundType) {
   try {
     switch (type) {
@@ -81,6 +91,7 @@ export function playSound(type: SoundType) {
       case 'achievement': playAchievementSound(); break
       case 'insight': playInsightSound(); break
       case 'feynman': playFeynmanSound(); break
+      case 'podcast': playPodcastSound(); break
     }
   } catch {
     // Silently fail if audio isn't available

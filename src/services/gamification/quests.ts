@@ -30,6 +30,14 @@ const MODE_QUESTS: QuestDefinition[] = [
     target: 1,
     xpReward: XP_RULES.COMPLETE_QUEST,
   },
+  {
+    id: 'listen_1',
+    type: 'mode',
+    title: 'Podcast Listener',
+    description: 'Listen to 1 audio episode',
+    target: 1,
+    xpReward: XP_RULES.COMPLETE_QUEST,
+  },
 ]
 
 const STRETCH_QUESTS: QuestDefinition[] = [
