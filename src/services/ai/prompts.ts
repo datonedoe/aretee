@@ -1,3 +1,5 @@
+import { ErrorPattern } from '../../types/errors'
+
 export function buildSocraticSystemPrompt(
   question: string,
   answer: string,
@@ -88,6 +90,34 @@ function getFeynmanDifficultyContext(ease: number): string {
     return `This student is developing mastery (${ease}/400). Be encouraging about what they got right while clearly identifying gaps.`
   }
   return `This student is a beginner (${ease}/400). Be very encouraging. Focus on the effort and any correct elements. Gently identify the most important gap.`
+}
+
+export function buildErrorAwareContext(errorPatterns: ErrorPattern[]): string {
+  if (errorPatterns.length === 0) return ''
+
+  const descriptions: Record<string, string> = {
+    l1_interference: 'native language interference (L1 patterns bleeding into target language)',
+    false_friend: 'false friends (similar-looking words with different meanings across languages)',
+    overgeneralization: 'overgeneralization (applying rules too broadly)',
+    register_mismatch: 'register mismatch (using wrong formality level)',
+    avoidance: 'avoidance of difficult constructions',
+    plain_forgetting: 'plain forgetting (needs more repetition)',
+    conceptual_gap: 'conceptual gaps (fundamental misunderstandings)',
+    partial_recall: 'partial recall (knows part but not all)',
+  }
+
+  const lines = errorPatterns.slice(0, 3).map((p) => {
+    const desc = descriptions[p.category] ?? p.category
+    const trend =
+      p.trend === 'improving'
+        ? '(improving)'
+        : p.trend === 'worsening'
+          ? '(getting worse)'
+          : ''
+    return `- ${desc} ${trend} [${p.count} occurrences]`
+  })
+
+  return `\nThis student frequently struggles with:\n${lines.join('\n')}\nFocus your questions on these areas when relevant.`
 }
 
 export function buildOpeningQuestion(question: string, answer: string, ease: number): string {
