@@ -3,6 +3,7 @@ import { Card, Deck, ParsedCard, createCard, isCardDue } from '../types'
 import { CardParser } from '../services/srs/parser'
 import { getFileService } from '../services/platform'
 import { v4 as uuidv4 } from 'uuid'
+import { isDemoMode, getDemoDecks } from '../utils/demo-data'
 
 interface DeckState {
   decks: Deck[]
@@ -25,6 +26,12 @@ export const useDeckStore = create<DeckState>((set, get) => ({
 
   loadDecksFromVault: async (vaultPath: string) => {
     set({ isLoading: true, error: null })
+
+    // Demo mode: load mock data
+    if (isDemoMode()) {
+      set({ decks: getDemoDecks(), isLoading: false })
+      return
+    }
 
     try {
       const fileService = getFileService()

@@ -2,8 +2,11 @@ import { create } from 'zustand'
 import { ErrorEvent, ErrorPattern, ErrorCategory, UserErrorProfile } from '../types/errors'
 import { Card, Deck } from '../types'
 import { ErrorProfileManager } from '../services/errors/profile'
+import { ErrorClassifier } from '../services/errors/classifier'
+import { isDemoMode, getDemoErrorEvents } from '../utils/demo-data'
 
 const profileManager = new ErrorProfileManager()
+const demoClassifier = new ErrorClassifier()
 
 interface ErrorState {
   profile: UserErrorProfile | null
@@ -29,6 +32,22 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
   loadProfile: async () => {
     set({ isLoading: true, error: null })
     try {
+      // Demo mode: build profile from mock error events
+      if (isDemoMode()) {
+        const events = getDemoErrorEvents()
+        const patterns = demoClassifier.classifyBatch(events)
+        const profile: UserErrorProfile = {
+          userId: 'demo',
+          patterns,
+          topWeaknesses: patterns.slice(0, 5).map((p) => p.category),
+          lastUpdated: new Date(),
+          totalErrors: events.length,
+          totalReviews: 42,
+          errorRate: events.length / 42,
+        }
+        set({ profile, isLoading: false })
+        return
+      }
       await profileManager.load()
       const profile = await profileManager.getProfile()
       set({ profile, isLoading: false })

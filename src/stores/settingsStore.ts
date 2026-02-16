@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { getStorageService } from '../services/platform'
+import { isDemoMode } from '../utils/demo-data'
 import {
   SETTINGS_KEYS,
   DEFAULT_DESIRED_RETENTION,
@@ -29,6 +30,11 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   isLoaded: false,
 
   loadSettings: async () => {
+    // Demo mode bypass
+    if (isDemoMode()) {
+      set({ vaultPath: '/demo', fuzzEnabled: true, dailyNewLimit: 20, desiredRetention: 0.9, isLoaded: true })
+      return
+    }
     const storage = getStorageService()
     const vaultPath = await storage.get<string>(SETTINGS_KEYS.VAULT_PATH)
     const fuzzEnabled = await storage.get<boolean>(SETTINGS_KEYS.FUZZ_ENABLED)

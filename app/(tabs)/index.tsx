@@ -1,24 +1,68 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useDeckStore } from '../../src/stores/deckStore'
 import { useSettingsStore } from '../../src/stores/settingsStore'
+import { useErrorStore } from '../../src/stores/errorStore'
+import { useInterleavingStore } from '../../src/stores/interleavingStore'
 import { getFileService } from '../../src/services/platform'
 import { Colors, Spacing, BorderRadius } from '../../src/utils/constants'
 import { isCardDue } from '../../src/types'
+import { MicroChallengeCard } from '../../src/components/interleaving/MicroChallengeCard'
 
 export default function FlashScreen() {
   const router = useRouter()
   const { decks, isLoading, error, loadDecksFromVault } = useDeckStore()
   const { vaultPath, setVaultPath, isLoaded } = useSettingsStore()
+  const { loadProfile } = useErrorStore()
+  const {
+    pendingChallenges,
+    loadMicroSchedule,
+    generateChallenges,
+    completeMicroChallenge,
+  } = useInterleavingStore()
+  const [activeMicroChallenge, setActiveMicroChallenge] = useState<typeof pendingChallenges[0] | null>(null)
 
   useEffect(() => {
     if (isLoaded && vaultPath) {
       loadDecksFromVault(vaultPath)
+      loadProfile()
     }
-  }, [isLoaded, vaultPath, loadDecksFromVault])
+  }, [isLoaded, vaultPath, loadDecksFromVault, loadProfile])
+
+  // Load micro-challenge schedule when decks are available
+  useEffect(() => {
+    if (decks.length > 0) {
+      loadMicroSchedule().then(() => {
+        generateChallenges(decks)
+      })
+    }
+  }, [decks.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show next pending challenge
+  useEffect(() => {
+    if (pendingChallenges.length > 0 && !activeMicroChallenge) {
+      setActiveMicroChallenge(pendingChallenges[0])
+    }
+  }, [pendingChallenges, activeMicroChallenge])
+
+  const handleMicroComplete = useCallback(
+    async (id: string) => {
+      await completeMicroChallenge(id)
+      setActiveMicroChallenge(null)
+    },
+    [completeMicroChallenge]
+  )
+
+  const handleMicroDismiss = useCallback(() => {
+    setActiveMicroChallenge(null)
+  }, [])
+
+  const handleBlendedSession = useCallback(() => {
+    router.push('/review/blended')
+  }, [router])
 
   const handlePickFolder = useCallback(async () => {
     const fileService = getFileService()
@@ -173,7 +217,7 @@ export default function FlashScreen() {
 
       {/* Review All Button */}
       {totalDue > 0 && (
-        <View style={{ paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md }}>
+        <View style={{ paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm, gap: Spacing.sm }}>
           <Pressable
             onPress={handleReviewAll}
             style={{
@@ -189,6 +233,29 @@ export default function FlashScreen() {
             <Ionicons name="flash" size={20} color="#fff" />
             <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>
               Review All ({totalDue})
+            </Text>
+          </Pressable>
+          {/* Blended Session Button (Sprint 10) */}
+          <Pressable
+            onPress={handleBlendedSession}
+            style={{
+              backgroundColor: Colors.accent + '15',
+              paddingVertical: Spacing.md,
+              borderRadius: BorderRadius.md,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: Spacing.sm,
+              borderWidth: 1,
+              borderColor: Colors.accent + '40',
+            }}
+          >
+            <Ionicons name="shuffle" size={20} color={Colors.accent} />
+            <Text style={{ color: Colors.accent, fontSize: 16, fontWeight: '700' }}>
+              Blended Session
+            </Text>
+            <Text style={{ color: Colors.accent + '80', fontSize: 12 }}>
+              ⚡🏛️🧠
             </Text>
           </Pressable>
         </View>
