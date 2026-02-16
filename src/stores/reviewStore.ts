@@ -6,6 +6,8 @@ import { getFileService } from '../services/platform'
 import { useDeckStore } from './deckStore'
 import { useProfileStore } from './profileStore'
 import { useSettingsStore } from './settingsStore'
+import { ErrorClassifier } from '../services/errors/classifier'
+import { useErrorStore } from './errorStore'
 
 interface ReviewSession {
   deckId: string
@@ -37,6 +39,7 @@ interface ReviewState {
 }
 
 const cardWriter = new CardWriter()
+const errorClassifier = new ErrorClassifier()
 
 export const useReviewStore = create<ReviewState>((set, get) => ({
   session: null,
@@ -143,6 +146,15 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
 
     // Track gamification
     useProfileStore.getState().onCardReviewed(response, session.deckId)
+
+    // Error classification for Again/Hard responses
+    if (response === ReviewResponse.Again || response === ReviewResponse.Hard) {
+      const deck = useDeckStore.getState().decks.find((d) => d.id === session.deckId)
+      if (deck) {
+        const errorEvent = errorClassifier.classify(card, response, responseTimeMs, deck)
+        useErrorStore.getState().recordError(errorEvent)
+      }
+    }
 
     const result: ReviewSessionResult = {
       cardId: card.id,
