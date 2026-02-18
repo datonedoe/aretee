@@ -16,6 +16,7 @@ import { useDeckStore } from '../../src/stores/deckStore'
 import { EpisodeCard } from '../../src/components/audio/EpisodeCard'
 import { Colors, Spacing, BorderRadius } from '../../src/utils/constants'
 import { isCardDue } from '../../src/types'
+import { hapticLight, hapticMedium } from '../../src/services/haptics'
 
 export default function ListenScreen() {
   const router = useRouter()
@@ -41,6 +42,7 @@ export default function ListenScreen() {
   }, [loadEpisodes])
 
   const handleGenerateFromDue = useCallback(async () => {
+    hapticMedium()
     // Collect due/weak cards across all decks
     const weakCards = decks.flatMap((deck) =>
       deck.cards
@@ -91,6 +93,7 @@ export default function ListenScreen() {
 
   const handlePlay = useCallback(
     (episodeId: string) => {
+      hapticLight()
       if (playback.currentEpisodeId === episodeId && playback.isPlaying) {
         pause()
       } else if (playback.currentEpisodeId === episodeId) {

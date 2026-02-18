@@ -14,6 +14,7 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { getLevelForXP, LEVEL_DEFINITIONS } from '../../services/gamification'
+import { hapticCelebration } from '../../services/haptics'
 
 interface LevelUpCelebrationProps {
   newLevel: number
@@ -32,6 +33,7 @@ export function LevelUpCelebration({ newLevel, onDismiss }: LevelUpCelebrationPr
   const glowOpacity = useSharedValue(0)
 
   useEffect(() => {
+    hapticCelebration()
     // Sequence: glow → badge pops in → title fades in → unlock fades in
     glowOpacity.value = withSequence(
       withTiming(0.6, { duration: 300 }),

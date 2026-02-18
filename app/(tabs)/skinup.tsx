@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useSkinUPStore } from '../../src/stores/skinupStore'
 import { PoolBalance } from '../../src/components/skinup/PoolBalance'
 import { DrainTimerComponent } from '../../src/components/skinup/DrainTimer'
+import { hapticMedium, hapticWarning, hapticHeavy } from '../../src/services/haptics'
 
 export default function SkinUPScreen() {
   const router = useRouter()
@@ -17,6 +18,7 @@ export default function SkinUPScreen() {
 
   const handlePause = async () => {
     if (!pool) return
+    hapticWarning()
     if (pool.status === 'paused') {
       await resumePool()
     } else {
@@ -41,6 +43,7 @@ export default function SkinUPScreen() {
   }
 
   const handleReset = () => {
+    hapticHeavy()
     Alert.alert(
       'Reset Pool',
       'This will delete the current pool. For demo purposes only.',

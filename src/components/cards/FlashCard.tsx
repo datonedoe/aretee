@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { View, Text, Pressable } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -6,6 +7,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
+import { hapticMedium } from '../../services/haptics'
 
 interface FlashCardProps {
   question: string
@@ -20,7 +22,7 @@ const SPRING_CONFIG = {
   mass: 0.5,
 }
 
-export function FlashCard({ question, answer, isFlipped, onFlip }: FlashCardProps) {
+export const FlashCard = memo(function FlashCard({ question, answer, isFlipped, onFlip }: FlashCardProps) {
   const rotation = useSharedValue(0)
 
   const frontStyle = useAnimatedStyle(() => {
@@ -47,7 +49,7 @@ export function FlashCard({ question, answer, isFlipped, onFlip }: FlashCardProp
   }
 
   return (
-    <Pressable onPress={onFlip} style={{ flex: 1, width: '100%' }}>
+    <Pressable onPress={() => { hapticMedium(); onFlip() }} style={{ flex: 1, width: '100%' }}>
       <View style={{ flex: 1, width: '100%' }}>
         {/* Front - Question */}
         <Animated.View
@@ -146,4 +148,4 @@ export function FlashCard({ question, answer, isFlipped, onFlip }: FlashCardProp
       </View>
     </Pressable>
   )
-}
+})

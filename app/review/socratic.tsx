@@ -16,6 +16,7 @@ import { DialogueBubble } from '../../src/components/socratic/DialogueBubble'
 import { ThinkingPrompt } from '../../src/components/socratic/ThinkingPrompt'
 import { InsightReveal } from '../../src/components/socratic/InsightReveal'
 import { Colors, Spacing, BorderRadius } from '../../src/utils/constants'
+import { hapticLight, hapticMedium, hapticSuccess, hapticCelebration } from '../../src/services/haptics'
 import type { SocraticMessage } from '../../src/services/ai'
 
 export default function SocraticScreen() {
@@ -58,6 +59,7 @@ export default function SocraticScreen() {
   // Show insight modal when detected
   useEffect(() => {
     if (insightJustReached) {
+      hapticCelebration()
       setShowInsight(true)
     }
   }, [insightJustReached])
@@ -73,17 +75,20 @@ export default function SocraticScreen() {
 
   const handleSend = useCallback(
     (message: string) => {
+      hapticLight()
       sendReply(message)
     },
     [sendReply]
   )
 
   const handleEnd = useCallback(() => {
+    hapticMedium()
     endSession()
     router.back()
   }, [endSession, router])
 
   const handleDismissInsight = useCallback(() => {
+    hapticSuccess()
     setShowInsight(false)
     clearInsightFlag()
   }, [clearInsightFlag])

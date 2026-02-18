@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { View, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
@@ -5,7 +6,7 @@ import { useProfileStore } from '../../stores/profileStore'
 import { ACHIEVEMENT_DEFINITIONS } from '../../services/gamification'
 import { RARITY_COLORS } from '../../types'
 
-export function AchievementList() {
+export const AchievementList = memo(function AchievementList() {
   const { profile } = useProfileStore()
   const unlockedIds = new Set(profile.achievements.map((a) => a.id))
 
@@ -132,4 +133,4 @@ export function AchievementList() {
       )}
     </View>
   )
-}
+})

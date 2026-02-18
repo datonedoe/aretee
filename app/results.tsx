@@ -12,6 +12,7 @@ import { XPBar } from '../src/components/gamification'
 import { LevelUpCelebration } from '../src/components/gamification/LevelUpCelebration'
 import { AchievementToast } from '../src/components/gamification/AchievementToast'
 import { playSound } from '../src/services/audio/sounds'
+import { hapticSuccess, hapticMedium } from '../src/services/haptics'
 
 interface SessionSummary {
   deckName: string
@@ -67,6 +68,7 @@ export default function ResultsScreen() {
 
     const xpSnapshot = sessionXP
 
+    hapticSuccess()
     setSummary({
       deckName: session.deckName,
       totalCards: session.results.length,
@@ -419,7 +421,7 @@ export default function ResultsScreen() {
         {/* Action Buttons */}
         <View style={{ width: '100%', gap: Spacing.sm, marginTop: Spacing.xl }}>
           <Pressable
-            onPress={() => router.replace('/(tabs)')}
+            onPress={() => { hapticMedium(); router.replace('/(tabs)') }}
             style={{
               backgroundColor: Colors.primary,
               paddingVertical: Spacing.md,

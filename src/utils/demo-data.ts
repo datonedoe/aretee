@@ -209,7 +209,23 @@ export function getDemoErrorEvents(): ErrorEvent[] {
   ]
 }
 
+/** Activated by ?demo=true on web, or DEMO_MODE global in native dev builds */
 export function isDemoMode(): boolean {
-  if (typeof window === 'undefined') return false
-  return new URLSearchParams(window.location.search).has('demo')
+  // Web: URL param
+  if (typeof window !== 'undefined' && typeof window.location !== 'undefined') {
+    try {
+      return new URLSearchParams(window.location.search).has('demo')
+    } catch {
+      // RN doesn't have window.location.search
+    }
+  }
+  // Native: global flag (set via Metro dev console or env)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return !!(globalThis as any).__ARETEE_DEMO__
+}
+
+/** Call once to enable demo mode in native builds */
+export function enableDemoMode(): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).__ARETEE_DEMO__ = true
 }

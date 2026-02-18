@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, useMemo } from 'react'
 import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
@@ -8,9 +8,12 @@ import { useSettingsStore } from '../../src/stores/settingsStore'
 import { useErrorStore } from '../../src/stores/errorStore'
 import { useInterleavingStore } from '../../src/stores/interleavingStore'
 import { getFileService } from '../../src/services/platform'
+import { enableDemoMode } from '../../src/utils/demo-data'
 import { Colors, Spacing, BorderRadius } from '../../src/utils/constants'
 import { isCardDue } from '../../src/types'
 import { MicroChallengeCard } from '../../src/components/interleaving/MicroChallengeCard'
+import { DeckListItem } from '../../src/components/cards/DeckListItem'
+import { hapticMedium, hapticLight } from '../../src/services/haptics'
 
 export default function FlashScreen() {
   const router = useRouter()
@@ -70,6 +73,11 @@ export default function FlashScreen() {
     if (path) {
       await setVaultPath(path)
     }
+  }, [setVaultPath])
+
+  const handleTryDemo = useCallback(async () => {
+    enableDemoMode()
+    await setVaultPath('/demo')
   }, [setVaultPath])
 
   const handleReviewDeck = useCallback(
@@ -155,6 +163,32 @@ export default function FlashScreen() {
               Choose Folder
             </Text>
           </Pressable>
+          <Pressable
+            onPress={handleTryDemo}
+            style={{
+              backgroundColor: Colors.surface,
+              paddingHorizontal: Spacing.xl,
+              paddingVertical: Spacing.md,
+              borderRadius: BorderRadius.md,
+              marginTop: Spacing.md,
+              borderWidth: 1,
+              borderColor: Colors.accent + '40',
+            }}
+          >
+            <Text style={{ color: Colors.accent, fontSize: 16, fontWeight: '600' }}>
+              Try Demo
+            </Text>
+          </Pressable>
+          <Text
+            style={{
+              color: Colors.textSecondary,
+              fontSize: 12,
+              marginTop: Spacing.sm,
+              textAlign: 'center',
+            }}
+          >
+            3 sample decks · Spanish, Mandarin, Quant
+          </Text>
         </View>
       </SafeAreaView>
     )
@@ -200,8 +234,19 @@ export default function FlashScreen() {
     )
   }
 
-  const totalDue = decks.reduce((sum, d) => sum + d.cards.filter(isCardDue).length, 0)
-  const totalCards = decks.reduce((sum, d) => sum + d.cards.length, 0)
+  // Memoize expensive per-deck due counts
+  const deckDueCounts = useMemo(
+    () => new Map(decks.map((d) => [d.id, d.cards.filter(isCardDue).length])),
+    [decks]
+  )
+  const totalDue = useMemo(
+    () => Array.from(deckDueCounts.values()).reduce((a, b) => a + b, 0),
+    [deckDueCounts]
+  )
+  const totalCards = useMemo(
+    () => decks.reduce((sum, d) => sum + d.cards.length, 0),
+    [decks]
+  )
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -219,7 +264,7 @@ export default function FlashScreen() {
       {totalDue > 0 && (
         <View style={{ paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm, gap: Spacing.sm }}>
           <Pressable
-            onPress={handleReviewAll}
+            onPress={() => { hapticMedium(); handleReviewAll() }}
             style={{
               backgroundColor: Colors.primary,
               paddingVertical: Spacing.md,
@@ -237,7 +282,7 @@ export default function FlashScreen() {
           </Pressable>
           {/* Blended Session Button (Sprint 10) */}
           <Pressable
-            onPress={handleBlendedSession}
+            onPress={() => { hapticMedium(); handleBlendedSession() }}
             style={{
               backgroundColor: Colors.accent + '15',
               paddingVertical: Spacing.md,
@@ -266,103 +311,18 @@ export default function FlashScreen() {
         data={decks}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: Spacing.lg, paddingTop: Spacing.sm, gap: Spacing.sm }}
-        renderItem={({ item: deck }) => {
-          const dueCount = deck.cards.filter(isCardDue).length
-          return (
-            <Pressable
-              onPress={() => handleReviewDeck(deck.id)}
-              style={{
-                backgroundColor: Colors.surface,
-                borderRadius: BorderRadius.lg,
-                padding: Spacing.lg,
-                borderWidth: 1,
-                borderColor: dueCount > 0 ? Colors.primary + '40' : Colors.border,
-              }}
-            >
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: Colors.text, fontSize: 16, fontWeight: '600' }}>
-                    {deck.name}
-                  </Text>
-                  <Text style={{ color: Colors.textSecondary, fontSize: 13, marginTop: 4 }}>
-                    {deck.cards.length} cards total
-                  </Text>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}>
-                  {/* Feynman button */}
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation?.()
-                      handleFeynman(deck.id)
-                    }}
-                    style={{
-                      backgroundColor: Colors.warning + '15',
-                      borderRadius: BorderRadius.full,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    <Ionicons name="bulb-outline" size={13} color={Colors.warning} />
-                    <Text style={{ color: Colors.warning, fontSize: 12, fontWeight: '600' }}>
-                      Teach
-                    </Text>
-                  </Pressable>
-                  {/* Socratic button */}
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation?.()
-                      handleSocratic(deck.id)
-                    }}
-                    style={{
-                      backgroundColor: Colors.accent + '15',
-                      borderRadius: BorderRadius.full,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    <Ionicons name="school-outline" size={13} color={Colors.accent} />
-                    <Text style={{ color: Colors.accent, fontSize: 12, fontWeight: '600' }}>
-                      Ask
-                    </Text>
-                  </Pressable>
-                  {dueCount > 0 ? (
-                    <View
-                      style={{
-                        backgroundColor: Colors.primary,
-                        borderRadius: BorderRadius.full,
-                        paddingHorizontal: 12,
-                        paddingVertical: 4,
-                      }}
-                    >
-                      <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>
-                        {dueCount} due
-                      </Text>
-                    </View>
-                  ) : (
-                    <View
-                      style={{
-                        backgroundColor: Colors.success + '20',
-                        borderRadius: BorderRadius.full,
-                        paddingHorizontal: 12,
-                        paddingVertical: 4,
-                      }}
-                    >
-                      <Text style={{ color: Colors.success, fontSize: 13, fontWeight: '600' }}>
-                        Done
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            </Pressable>
-          )
-        }}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
+        renderItem={({ item: deck }) => (
+          <DeckListItem
+            deck={deck}
+            dueCount={deckDueCounts.get(deck.id) ?? 0}
+            onReview={handleReviewDeck}
+            onSocratic={handleSocratic}
+            onFeynman={handleFeynman}
+          />
+        )}
         ListEmptyComponent={
           <View style={{ alignItems: 'center', paddingTop: Spacing.xxl }}>
             <Ionicons name="documents-outline" size={48} color={Colors.textSecondary} />

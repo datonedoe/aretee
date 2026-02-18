@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { Colors } from '../../src/utils/constants'
 import { MiniPlayer } from '../../src/components/audio/MiniPlayer'
+import { hapticSelection } from '../../src/services/haptics'
 
 export default function TabLayout() {
   const router = useRouter()
@@ -15,6 +16,9 @@ export default function TabLayout() {
   return (
     <>
       <Tabs
+        screenListeners={{
+          tabPress: () => hapticSelection(),
+        }}
         screenOptions={{
           headerShown: false,
           tabBarStyle: {

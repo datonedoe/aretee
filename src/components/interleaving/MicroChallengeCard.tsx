@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { View, Text, Pressable, StyleSheet, Animated } from 'react-native'
+import { View, Text, Pressable, StyleSheet } from 'react-native'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated'
 import { MicroChallenge, MicroChallengeType } from '../../types/interleaving'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 
@@ -48,27 +54,25 @@ export function MicroChallengeCard({
   const [revealed, setRevealed] = useState(false)
   const [timeLeft, setTimeLeft] = useState(challenge.timeLimit)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const slideAnim = useRef(new Animated.Value(-100)).current
-  const opacityAnim = useRef(new Animated.Value(0)).current
+  const slideAnim = useSharedValue(-100)
+  const opacityAnim = useSharedValue(0)
 
   const config = TYPE_CONFIG[challenge.type]
 
   // Slide-in animation
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 60,
-        friction: 10,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start()
-  }, [slideAnim, opacityAnim])
+    slideAnim.value = withSpring(0, {
+      damping: 15,
+      stiffness: 60,
+      mass: 1,
+    })
+    opacityAnim.value = withTiming(1, { duration: 300 })
+  }, [])
+
+  const containerAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: slideAnim.value }],
+    opacity: opacityAnim.value,
+  }))
 
   // Countdown timer
   useEffect(() => {
@@ -104,11 +108,8 @@ export function MicroChallengeCard({
     <Animated.View
       style={[
         styles.container,
-        {
-          borderColor: config.color + '60',
-          transform: [{ translateY: slideAnim }],
-          opacity: opacityAnim,
-        },
+        { borderColor: config.color + '60' },
+        containerAnimStyle,
       ]}
     >
       {/* Timer bar */}

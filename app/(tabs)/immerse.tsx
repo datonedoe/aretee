@@ -20,6 +20,7 @@ import {
   CONTENT_TYPES,
 } from '../../src/types/immersion'
 import { Colors, Spacing, BorderRadius } from '../../src/utils/constants'
+import { hapticLight, hapticMedium, hapticSelection, hapticSuccess } from '../../src/services/haptics'
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window')
 const CARD_HEIGHT = SCREEN_HEIGHT - 180 // account for tab bar + safe area
@@ -110,6 +111,7 @@ function ImmersionCard({
 
   const handleAddToSRS = useCallback(() => {
     if (selectedWord) {
+      hapticSuccess()
       addLearnedWord(selectedWord.word, selectedWord.translation)
       setSelectedWord(null)
     }
@@ -282,7 +284,7 @@ function ImmersionCard({
 
           <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
             <Pressable
-              onPress={() => setShowTranslation(!showTranslation)}
+              onPress={() => { hapticLight(); setShowTranslation(!showTranslation) }}
               style={{
                 backgroundColor: Colors.accent + '20',
                 width: 40,
@@ -299,7 +301,7 @@ function ImmersionCard({
               />
             </Pressable>
             <Pressable
-              onPress={playAudio}
+              onPress={() => { hapticLight(); playAudio() }}
               style={{
                 backgroundColor: Colors.primary + '20',
                 width: 40,
@@ -411,6 +413,7 @@ export default function ImmerseScreen() {
 
   const handleTooEasy = useCallback(
     (itemId: string) => {
+      hapticLight()
       recordInteraction(itemId, 'too_easy')
       nextItem()
       if (flatListRef.current && currentIndex < feedItems.length - 1) {
@@ -422,6 +425,7 @@ export default function ImmerseScreen() {
 
   const handleTooHard = useCallback(
     (itemId: string) => {
+      hapticMedium()
       recordInteraction(itemId, 'too_hard')
       nextItem()
       if (flatListRef.current && currentIndex < feedItems.length - 1) {
@@ -476,6 +480,7 @@ export default function ImmerseScreen() {
         >
           <Pressable
             onPress={() => {
+              hapticSelection()
               setSelectedType(undefined)
               loadFeed(undefined)
             }}
@@ -500,6 +505,7 @@ export default function ImmerseScreen() {
             <Pressable
               key={ct}
               onPress={() => {
+                hapticSelection()
                 setSelectedType(ct)
                 loadFeed(ct)
               }}
@@ -565,7 +571,7 @@ export default function ImmerseScreen() {
               Start the backend server to see AI-generated immersion content with authentic dialogue, stories, and conversations.
             </Text>
             <Pressable
-              onPress={() => loadFeed(selectedType)}
+              onPress={() => { hapticMedium(); loadFeed(selectedType) }}
               style={{
                 backgroundColor: Colors.primary,
                 paddingHorizontal: Spacing.lg,
@@ -601,7 +607,7 @@ export default function ImmerseScreen() {
           </Text>
         </View>
         <Pressable
-          onPress={() => loadFeed(selectedType)}
+          onPress={() => { hapticLight(); loadFeed(selectedType) }}
           style={{
             backgroundColor: Colors.surface,
             paddingHorizontal: 12,
@@ -626,6 +632,7 @@ export default function ImmerseScreen() {
       >
         <Pressable
           onPress={() => {
+            hapticSelection()
             setSelectedType(undefined)
             loadFeed(undefined)
           }}
@@ -650,6 +657,7 @@ export default function ImmerseScreen() {
           <Pressable
             key={ct}
             onPress={() => {
+              hapticSelection()
               setSelectedType(ct)
               loadFeed(ct)
             }}
