@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useSkinUPStore } from '../../src/stores/skinupStore'
 import { OrgSelector } from '../../src/components/skinup/OrgSelector'
 import { DrainSpeed, DRAIN_SPEED_PRESETS, EveryOrgOrganization, SkinUPConfig } from '../../src/types/skinup'
+import { hapticLight, hapticMedium, hapticSuccess, hapticHeavy } from '../../src/services/haptics'
 
 const DEPOSIT_PRESETS = [5, 10, 20, 50]
 const GRACE_PRESETS = [
@@ -41,6 +42,7 @@ export default function SkinUPSetup() {
 
   const handleConfirm = async () => {
     if (!selectedOrg) return
+    hapticHeavy()
 
     const config: SkinUPConfig = {
       depositAmount,
@@ -53,6 +55,7 @@ export default function SkinUPSetup() {
 
     const success = await createPool(config)
     if (success) {
+      hapticSuccess()
       router.replace('/(tabs)/skinup')
     } else {
       Alert.alert('Error', 'Failed to create pool. Try again.')
@@ -217,7 +220,7 @@ export default function SkinUPSetup() {
             !canProceed() && styles.nextButtonDisabled,
             step === 4 && styles.confirmButton,
           ]}
-          onPress={step === 4 ? handleConfirm : () => setStep(s => s + 1)}
+          onPress={step === 4 ? handleConfirm : () => { hapticMedium(); setStep(s => s + 1) }}
           disabled={!canProceed() || isLoading}
           activeOpacity={0.8}
         >

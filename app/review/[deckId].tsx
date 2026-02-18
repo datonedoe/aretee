@@ -13,6 +13,7 @@ import { useKeyboardShortcuts } from '../../src/hooks/useKeyboardShortcuts'
 import { ReviewResponse, ResponseKeyBindings, isCardDue } from '../../src/types'
 import { SRSEngine } from '../../src/services/srs/engine'
 import { Colors, Spacing, BorderRadius } from '../../src/utils/constants'
+import { hapticMedium } from '../../src/services/haptics'
 
 export default function ReviewScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>()
@@ -70,6 +71,7 @@ export default function ReviewScreen() {
 
       if (key === ' ' || key === 'Enter') {
         if (!session.isFlipped) {
+          hapticMedium()
           flipCard()
         }
         return
@@ -129,7 +131,7 @@ export default function ReviewScreen() {
           gap: Spacing.sm,
         }}
       >
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => { hapticMedium(); router.back() }}>
           <Ionicons name="close" size={24} color={Colors.textSecondary} />
         </Pressable>
         <View style={{ flex: 1 }}>
@@ -198,7 +200,7 @@ export default function ReviewScreen() {
           />
         ) : (
           <Pressable
-            onPress={flipCard}
+            onPress={() => { hapticMedium(); flipCard() }}
             style={{
               backgroundColor: Colors.primary,
               paddingVertical: Spacing.md,

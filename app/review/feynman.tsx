@@ -16,6 +16,7 @@ import { ExplainInput } from '../../src/components/feynman/ExplainInput'
 import { GradeCard } from '../../src/components/feynman/GradeCard'
 import { GapHighlight } from '../../src/components/feynman/GapHighlight'
 import { Colors, Spacing, BorderRadius } from '../../src/utils/constants'
+import { hapticLight, hapticMedium, hapticSuccess } from '../../src/services/haptics'
 
 export default function FeynmanScreen() {
   const { cardId, deckId } = useLocalSearchParams<{
@@ -53,6 +54,7 @@ export default function FeynmanScreen() {
 
   const handleSubmitExplanation = useCallback(
     (explanation: string) => {
+      hapticMedium()
       submitExplanation(explanation)
     },
     [submitExplanation]
@@ -60,17 +62,20 @@ export default function FeynmanScreen() {
 
   const handleSubmitFollowUp = useCallback(
     (answer: string) => {
+      hapticLight()
       submitFollowUp(answer)
     },
     [submitFollowUp]
   )
 
   const handleEnd = useCallback(() => {
+    hapticMedium()
     endSession()
     router.back()
   }, [endSession, router])
 
   const handleAnswerFollowUp = useCallback(() => {
+    hapticSuccess()
     goToFollowUp()
   }, [goToFollowUp])
 

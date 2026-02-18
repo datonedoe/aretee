@@ -1,10 +1,11 @@
+import { memo } from 'react'
 import { View, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { useProfileStore } from '../../stores/profileStore'
 import { getQuestDefinition } from '../../services/gamification'
 
-export function DailyQuests() {
+export const DailyQuests = memo(function DailyQuests() {
   const { profile } = useProfileStore()
   const quests = profile.dailyQuests
 
@@ -120,4 +121,4 @@ export function DailyQuests() {
       })}
     </View>
   )
-}
+})

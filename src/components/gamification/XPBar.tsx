@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { View, Text } from 'react-native'
 import Animated, {
   useSharedValue,
@@ -15,7 +15,7 @@ interface XPBarProps {
   compact?: boolean
 }
 
-export function XPBar({ compact = false }: XPBarProps) {
+export const XPBar = React.memo(function XPBar({ compact = false }: XPBarProps) {
   const { profile } = useProfileStore()
   const { currentLevel, nextLevel, xpIntoLevel, xpForNextLevel, progress } =
     getLevelProgress(profile.totalXP)
@@ -146,4 +146,4 @@ export function XPBar({ compact = false }: XPBarProps) {
       )}
     </View>
   )
-}
+})

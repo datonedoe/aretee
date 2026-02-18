@@ -1,8 +1,10 @@
+import { memo, useCallback } from 'react'
 import { View, Text, Pressable, Platform } from 'react-native'
 import { ReviewResponse, ResponseColors, CardState } from '../../types'
 import { SRSEngine } from '../../services/srs/engine'
 import { formatInterval } from '../../utils/dates'
 import { Spacing, BorderRadius, Colors } from '../../utils/constants'
+import { hapticLight, hapticMedium, hapticSuccess, hapticError } from '../../services/haptics'
 
 interface ResponseButtonsProps {
   currentInterval: number
@@ -32,7 +34,14 @@ const RESPONSE_ORDER: ReviewResponse[] = [
   ReviewResponse.Easy,
 ]
 
-export function ResponseButtons({
+const RESPONSE_HAPTICS: Record<ReviewResponse, () => void> = {
+  [ReviewResponse.Again]: hapticError,
+  [ReviewResponse.Hard]: hapticMedium,
+  [ReviewResponse.Good]: hapticLight,
+  [ReviewResponse.Easy]: hapticSuccess,
+}
+
+export const ResponseButtons = memo(function ResponseButtons({
   currentInterval,
   currentEase,
   reviewCount,
@@ -64,7 +73,7 @@ export function ResponseButtons({
           return (
             <Pressable
               key={response}
-              onPress={() => onResponse(response)}
+              onPress={() => { RESPONSE_HAPTICS[response](); onResponse(response) }}
               style={({ pressed }) => ({
                 flex: 1,
                 backgroundColor: pressed ? color + '30' : color + '15',
@@ -92,4 +101,4 @@ export function ResponseButtons({
       </View>
     </View>
   )
-}
+})

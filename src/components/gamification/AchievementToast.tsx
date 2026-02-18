@@ -13,6 +13,7 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { AchievementDefinition, RARITY_COLORS } from '../../types'
+import { hapticSuccess } from '../../services/haptics'
 
 interface AchievementToastProps {
   achievement: AchievementDefinition
@@ -23,6 +24,7 @@ export function AchievementToast({ achievement, onDismiss }: AchievementToastPro
   const rarityColor = RARITY_COLORS[achievement.rarity]
 
   useEffect(() => {
+    hapticSuccess()
     const timer = setTimeout(onDismiss, 4000)
     return () => clearTimeout(timer)
   }, [])
