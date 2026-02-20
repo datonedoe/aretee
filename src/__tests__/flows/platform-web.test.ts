@@ -85,7 +85,7 @@ describe('Web Platform: Keyboard Shortcuts', () => {
     useDeckStore.setState({ decks: [makeDeck('d1', 'Test', [card])] })
     useReviewStore.getState().startSession('d1', [card], 'Test')
 
-    const key = 'Enter'
+    const key: string = 'Enter'
     if (key === ' ' || key === 'Enter') {
       if (!useReviewStore.getState().session!.isFlipped) {
         useReviewStore.getState().flipCard()

@@ -62,3 +62,5 @@ backend/venv/
 backend/output/
 __pycache__/
 *.pyc
+memory/
+screenshots/

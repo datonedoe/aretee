@@ -44,6 +44,7 @@ import { useReviewStore } from '../../stores/reviewStore'
 import { useDeckStore } from '../../stores/deckStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { ReviewResponse } from '../../types'
+import { getFileService, getStorageService } from '../../services/platform'
 import { makeCard, makeDeck } from './test-helpers'
 
 describe('iOS Platform: No Keyboard Shortcuts', () => {
@@ -166,8 +167,6 @@ describe('iOS Platform: Native File Service Routing', () => {
 
 describe('iOS Platform: Platform Service Mock Coverage', () => {
   it('mock covers FileService interface fully', () => {
-    // Verify our mock satisfies the FileService interface
-    const { getFileService } = require('../../services/platform')
     const fs = getFileService()
     expect(typeof fs.readFile).toBe('function')
     expect(typeof fs.writeFile).toBe('function')
@@ -176,7 +175,6 @@ describe('iOS Platform: Platform Service Mock Coverage', () => {
   })
 
   it('mock covers StorageService interface fully', () => {
-    const { getStorageService } = require('../../services/platform')
     const ss = getStorageService()
     expect(typeof ss.get).toBe('function')
     expect(typeof ss.set).toBe('function')
@@ -184,7 +182,6 @@ describe('iOS Platform: Platform Service Mock Coverage', () => {
   })
 
   it('mock file service returns expected values', async () => {
-    const { getFileService } = require('../../services/platform')
     const fs = getFileService()
 
     expect(await fs.readFile('/any')).toBe('')
@@ -194,7 +191,6 @@ describe('iOS Platform: Platform Service Mock Coverage', () => {
   })
 
   it('mock storage service returns expected values', async () => {
-    const { getStorageService } = require('../../services/platform')
     const ss = getStorageService()
 
     expect(await ss.get('key')).toBeNull()
