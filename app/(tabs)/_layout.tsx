@@ -67,6 +67,15 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="converse"
+          options={{
+            title: 'Converse',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="chatbubble-ellipses" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="skinup"
           options={{
             title: 'SkinUP',
