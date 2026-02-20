@@ -9,6 +9,7 @@ import { useSettingsStore } from '../src/stores/settingsStore'
 import { useProfileStore } from '../src/stores/profileStore'
 import { useOnboardingStore } from '../src/stores/onboardingStore'
 import { Colors } from '../src/utils/constants'
+import { isDemoMode } from '../src/utils/demo-data'
 
 // Enable demo mode in dev builds when EXPO_PUBLIC_DEMO is set
 if (__DEV__ && process.env.EXPO_PUBLIC_DEMO === '1') {
@@ -30,14 +31,12 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!ready) return
 
-    const inOnboarding = segments[0] === 'onboarding'
+    const inTabs = segments[0] === '(tabs)'
 
-    if (!hasCompleted && !inOnboarding) {
-      // User hasn't completed onboarding — redirect
-      router.replace('/onboarding/welcome')
-    } else if (hasCompleted && inOnboarding) {
-      // User completed onboarding but is still on an onboarding screen
+    // TEMP: Force skip to tabs for demo screenshots
+    if (!inTabs) {
       router.replace('/(tabs)')
+      return
     }
   }, [ready, hasCompleted, segments])
 
