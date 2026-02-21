@@ -31,11 +31,18 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!ready) return
 
+    const inOnboarding = segments[0] === 'onboarding'
     const inTabs = segments[0] === '(tabs)'
 
-    // TEMP: Force skip to tabs for demo screenshots
-    if (!inTabs) {
+    // Skip onboarding if already completed (or demo mode)
+    if (inOnboarding && (hasCompleted || isDemoMode())) {
       router.replace('/(tabs)')
+      return
+    }
+
+    // Redirect to onboarding if not completed and not already there
+    if (!inOnboarding && !inTabs && !hasCompleted && !isDemoMode()) {
+      router.replace('/onboarding/welcome')
       return
     }
   }, [ready, hasCompleted, segments])
