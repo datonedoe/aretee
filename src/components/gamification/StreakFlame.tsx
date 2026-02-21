@@ -1,13 +1,5 @@
-import { useEffect } from 'react'
-import { View, Text } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated'
+import { useEffect, useRef } from 'react'
+import { View, Text, Animated, Easing } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { useProfileStore } from '../../stores/profileStore'
@@ -21,50 +13,78 @@ export function StreakFlame({ compact = false }: StreakFlameProps) {
   const { currentStreak, longestStreak, freezesRemaining, freezesMax } =
     streakData.summary
 
-  const flameScale = useSharedValue(1)
-  const flameRotation = useSharedValue(0)
+  const flameScale = useRef(new Animated.Value(1)).current
+  const flameRotation = useRef(new Animated.Value(0)).current
+  const animRef = useRef<Animated.CompositeAnimation | null>(null)
 
   useEffect(() => {
+    if (animRef.current) animRef.current.stop()
+
     if (currentStreak > 0) {
-      flameScale.value = withRepeat(
-        withSequence(
-          withTiming(1.15, { duration: 600, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 600, easing: Easing.inOut(Easing.ease) })
+      animRef.current = Animated.parallel([
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(flameScale, {
+              toValue: 1.15,
+              duration: 600,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: true,
+            }),
+            Animated.timing(flameScale, {
+              toValue: 1,
+              duration: 600,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: true,
+            }),
+          ])
         ),
-        -1,
-        true
-      )
-      flameRotation.value = withRepeat(
-        withSequence(
-          withTiming(-3, { duration: 400, easing: Easing.inOut(Easing.ease) }),
-          withTiming(3, { duration: 400, easing: Easing.inOut(Easing.ease) })
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(flameRotation, {
+              toValue: -3,
+              duration: 400,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: true,
+            }),
+            Animated.timing(flameRotation, {
+              toValue: 3,
+              duration: 400,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: true,
+            }),
+          ])
         ),
-        -1,
-        true
-      )
+      ])
+      animRef.current.start()
+    }
+
+    return () => {
+      if (animRef.current) animRef.current.stop()
     }
   }, [currentStreak])
 
-  const animatedFlameStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: flameScale.value },
-      { rotate: `${flameRotation.value}deg` },
-    ],
-  }))
+  const rotateInterpolation = flameRotation.interpolate({
+    inputRange: [-3, 3],
+    outputRange: ['-3deg', '3deg'],
+  })
 
   const flameColor =
     currentStreak >= 30
-      ? '#F59E0B' // gold for 30+
+      ? '#F59E0B'
       : currentStreak >= 7
-        ? '#F97316' // orange for 7+
+        ? '#F97316'
         : currentStreak > 0
-          ? '#EF4444' // red for active
-          : Colors.textSecondary // gray for no streak
+          ? '#EF4444'
+          : Colors.textSecondary
+
+  const animatedFlameStyle = currentStreak > 0
+    ? { transform: [{ scale: flameScale }, { rotate: rotateInterpolation }] }
+    : undefined
 
   if (compact) {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-        <Animated.View style={currentStreak > 0 ? animatedFlameStyle : undefined}>
+        <Animated.View style={animatedFlameStyle}>
           <Ionicons name="flame" size={18} color={flameColor} />
         </Animated.View>
         <Text style={{ color: flameColor, fontSize: 14, fontWeight: '700' }}>
@@ -85,7 +105,7 @@ export function StreakFlame({ compact = false }: StreakFlameProps) {
         alignItems: 'center',
       }}
     >
-      <Animated.View style={currentStreak > 0 ? animatedFlameStyle : undefined}>
+      <Animated.View style={animatedFlameStyle}>
         <Ionicons name="flame" size={44} color={flameColor} />
       </Animated.View>
 

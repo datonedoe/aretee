@@ -2,13 +2,8 @@
  * AnimatedProgressBar — Smooth animated progress indicator for onboarding.
  * Fills smoothly between steps instead of jumping.
  */
-import React, { useEffect } from 'react'
-import { View } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated'
+import React, { useEffect, useRef } from 'react'
+import { View, Animated } from 'react-native'
 import { Colors, Spacing } from '../../utils/constants'
 
 const STEPS = ['welcome', 'interests', 'goals', 'vault-setup', 'ready'] as const
@@ -23,22 +18,6 @@ function AnimatedProgressBarInner({ currentStep }: AnimatedProgressBarProps) {
     typeof currentStep === 'number'
       ? currentStep
       : STEPS.indexOf(currentStep as typeof STEPS[number])
-
-  const progress = useSharedValue(0)
-
-  useEffect(() => {
-    // Progress from 0 to 1 based on step (0 = first step active, 4 = last)
-    const target = (stepIndex + 1) / STEPS.length
-    progress.value = withSpring(target, {
-      damping: 20,
-      stiffness: 90,
-      mass: 0.8,
-    })
-  }, [stepIndex])
-
-  const fillStyle = useAnimatedStyle(() => ({
-    width: `${progress.value * 100}%`,
-  }))
 
   return (
     <View
@@ -60,20 +39,13 @@ function AnimatedProgressBarInner({ currentStep }: AnimatedProgressBarProps) {
           }}
         >
           {i <= stepIndex && (
-            <Animated.View
-              style={[
-                {
-                  height: '100%',
-                  borderRadius: 2,
-                  backgroundColor: Colors.primary,
-                },
-                // Only animate the current step segment
-                i === stepIndex
-                  ? {
-                      width: '100%',
-                    }
-                  : { width: '100%' },
-              ]}
+            <View
+              style={{
+                height: '100%',
+                borderRadius: 2,
+                backgroundColor: Colors.primary,
+                width: '100%',
+              }}
             />
           )}
         </View>

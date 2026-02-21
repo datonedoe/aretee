@@ -1,14 +1,5 @@
-import React, { useEffect } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-  cancelAnimation,
-  interpolate,
-} from 'react-native-reanimated'
+import React, { useEffect, useRef } from 'react'
+import { View, Text, StyleSheet, Animated } from 'react-native'
 
 interface PoolBalanceProps {
   currentBalance: number   // cents
@@ -17,8 +8,9 @@ interface PoolBalanceProps {
 }
 
 export function PoolBalance({ currentBalance, depositAmount, status }: PoolBalanceProps) {
-  const animatedWidth = useSharedValue(1)
-  const pulseAnim = useSharedValue(1)
+  const animatedWidth = useRef(new Animated.Value(1)).current
+  const pulseAnim = useRef(new Animated.Value(1)).current
+  const pulseRef = useRef<Animated.CompositeAnimation | null>(null)
 
   const percentage = depositAmount > 0 ? currentBalance / depositAmount : 0
   const dollars = (currentBalance / 100).toFixed(2)
@@ -28,37 +20,44 @@ export function PoolBalance({ currentBalance, depositAmount, status }: PoolBalan
   const isCritical = percentage < 0.1
 
   useEffect(() => {
-    animatedWidth.value = withTiming(percentage, { duration: 800 })
+    Animated.timing(animatedWidth, {
+      toValue: percentage,
+      duration: 800,
+      useNativeDriver: false,
+    }).start()
   }, [percentage])
 
   useEffect(() => {
+    if (pulseRef.current) {
+      pulseRef.current.stop()
+      pulseAnim.setValue(1)
+    }
+
     if (isCritical && status === 'active') {
-      pulseAnim.value = withRepeat(
-        withSequence(
-          withTiming(0.6, { duration: 500 }),
-          withTiming(1, { duration: 500 })
-        ),
-        -1
+      pulseRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 0.6, duration: 500, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+        ])
       )
-      return () => {
-        cancelAnimation(pulseAnim)
-        pulseAnim.value = 1
+      pulseRef.current.start()
+    }
+
+    return () => {
+      if (pulseRef.current) {
+        pulseRef.current.stop()
+        pulseAnim.setValue(1)
       }
-    } else {
-      cancelAnimation(pulseAnim)
-      pulseAnim.value = 1
     }
   }, [isCritical, status])
 
   const barColor = isCritical ? '#F43F5E' : isLow ? '#F59E0B' : '#6C3CE1'
 
-  const pulseStyle = useAnimatedStyle(() => ({
-    opacity: pulseAnim.value,
-  }))
-
-  const barFillStyle = useAnimatedStyle(() => ({
-    width: `${interpolate(animatedWidth.value, [0, 1], [0, 100])}%`,
-  }))
+  const barFillWidth = animatedWidth.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+    extrapolate: 'clamp',
+  })
 
   return (
     <View style={styles.container}>
@@ -69,7 +68,7 @@ export function PoolBalance({ currentBalance, depositAmount, status }: PoolBalan
         </Text>
       </View>
 
-      <Animated.View style={isCritical ? pulseStyle : undefined}>
+      <Animated.View style={isCritical ? { opacity: pulseAnim } : undefined}>
         <Text style={[styles.amount, isCritical && styles.amountCritical]}>
           ${dollars}
         </Text>
@@ -81,8 +80,7 @@ export function PoolBalance({ currentBalance, depositAmount, status }: PoolBalan
         <Animated.View
           style={[
             styles.barFill,
-            { backgroundColor: barColor },
-            barFillStyle,
+            { backgroundColor: barColor, width: barFillWidth },
           ]}
         />
       </View>

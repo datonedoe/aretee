@@ -1,11 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { View, Text, Pressable, StyleSheet } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated'
+import { View, Text, Pressable, StyleSheet, Animated } from 'react-native'
 import { MicroChallenge, MicroChallengeType } from '../../types/interleaving'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 
@@ -54,25 +48,28 @@ export function MicroChallengeCard({
   const [revealed, setRevealed] = useState(false)
   const [timeLeft, setTimeLeft] = useState(challenge.timeLimit)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const slideAnim = useSharedValue(-100)
-  const opacityAnim = useSharedValue(0)
+  const slideAnim = useRef(new Animated.Value(-100)).current
+  const opacityAnim = useRef(new Animated.Value(0)).current
 
   const config = TYPE_CONFIG[challenge.type]
 
   // Slide-in animation
   useEffect(() => {
-    slideAnim.value = withSpring(0, {
-      damping: 15,
-      stiffness: 60,
-      mass: 1,
-    })
-    opacityAnim.value = withTiming(1, { duration: 300 })
+    Animated.parallel([
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        damping: 15,
+        stiffness: 60,
+        mass: 1,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start()
   }, [])
-
-  const containerAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: slideAnim.value }],
-    opacity: opacityAnim.value,
-  }))
 
   // Countdown timer
   useEffect(() => {
@@ -109,7 +106,10 @@ export function MicroChallengeCard({
       style={[
         styles.container,
         { borderColor: config.color + '60' },
-        containerAnimStyle,
+        {
+          transform: [{ translateY: slideAnim }],
+          opacity: opacityAnim,
+        },
       ]}
     >
       {/* Timer bar */}

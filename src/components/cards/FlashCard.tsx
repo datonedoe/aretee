@@ -1,11 +1,5 @@
-import { memo } from 'react'
-import { View, Text, Pressable } from 'react-native'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  interpolate,
-} from 'react-native-reanimated'
+import { memo, useEffect, useRef } from 'react'
+import { View, Text, Pressable, Animated } from 'react-native'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { hapticMedium } from '../../services/haptics'
 
@@ -20,54 +14,48 @@ const SPRING_CONFIG = {
   damping: 20,
   stiffness: 200,
   mass: 0.5,
+  useNativeDriver: true,
 }
 
 export const FlashCard = memo(function FlashCard({ question, answer, isFlipped, onFlip }: FlashCardProps) {
-  const rotation = useSharedValue(0)
+  const rotation = useRef(new Animated.Value(0)).current
 
-  const frontStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(rotation.value, [0, 1], [0, 180])
-    return {
-      transform: [{ perspective: 1200 }, { rotateY: `${rotateY}deg` }],
-      backfaceVisibility: 'hidden' as const,
-    }
+  useEffect(() => {
+    Animated.spring(rotation, {
+      toValue: isFlipped ? 1 : 0,
+      ...SPRING_CONFIG,
+    }).start()
+  }, [isFlipped, rotation])
+
+  const frontRotation = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
   })
 
-  const backStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(rotation.value, [0, 1], [180, 360])
-    return {
-      transform: [{ perspective: 1200 }, { rotateY: `${rotateY}deg` }],
-      backfaceVisibility: 'hidden' as const,
-    }
+  const backRotation = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['180deg', '360deg'],
   })
-
-  // Sync animation with prop
-  if (isFlipped && rotation.value < 0.5) {
-    rotation.value = withSpring(1, SPRING_CONFIG)
-  } else if (!isFlipped && rotation.value > 0.5) {
-    rotation.value = withSpring(0, SPRING_CONFIG)
-  }
 
   return (
     <Pressable onPress={() => { hapticMedium(); onFlip() }} style={{ flex: 1, width: '100%' }}>
       <View style={{ flex: 1, width: '100%' }}>
         {/* Front - Question */}
         <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              backgroundColor: Colors.surface,
-              borderRadius: BorderRadius.lg,
-              padding: Spacing.xl,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderWidth: 1,
-              borderColor: Colors.border,
-            },
-            frontStyle,
-          ]}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            backgroundColor: Colors.surface,
+            borderRadius: BorderRadius.lg,
+            padding: Spacing.xl,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: Colors.border,
+            backfaceVisibility: 'hidden',
+            transform: [{ perspective: 1200 }, { rotateY: frontRotation }],
+          }}
         >
           <Text
             style={{
@@ -105,21 +93,20 @@ export const FlashCard = memo(function FlashCard({ question, answer, isFlipped, 
 
         {/* Back - Answer */}
         <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              backgroundColor: Colors.surface,
-              borderRadius: BorderRadius.lg,
-              padding: Spacing.xl,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderWidth: 1,
-              borderColor: Colors.primary + '60',
-            },
-            backStyle,
-          ]}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            backgroundColor: Colors.surface,
+            borderRadius: BorderRadius.lg,
+            padding: Spacing.xl,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: Colors.primary + '60',
+            backfaceVisibility: 'hidden',
+            transform: [{ perspective: 1200 }, { rotateY: backRotation }],
+          }}
         >
           <Text
             style={{

@@ -1,12 +1,5 @@
-import React, { useEffect } from 'react'
-import { View, Text } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  interpolateColor,
-} from 'react-native-reanimated'
+import React, { useEffect, useRef } from 'react'
+import { View, Text, Animated } from 'react-native'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { getLevelProgress } from '../../services/gamification'
 import { useProfileStore } from '../../stores/profileStore'
@@ -15,29 +8,35 @@ interface XPBarProps {
   compact?: boolean
 }
 
+function getBarColor(progress: number): string {
+  if (progress >= 0.75) return Colors.success
+  if (progress >= 0.4) return Colors.accent
+  return Colors.primary
+}
+
 export const XPBar = React.memo(function XPBar({ compact = false }: XPBarProps) {
   const { profile } = useProfileStore()
   const { currentLevel, nextLevel, xpIntoLevel, xpForNextLevel, progress } =
     getLevelProgress(profile.totalXP)
 
-  const barProgress = useSharedValue(0)
+  const barProgress = useRef(new Animated.Value(0)).current
+  const barColor = getBarColor(progress)
 
   useEffect(() => {
-    barProgress.value = withSpring(progress, {
+    Animated.spring(barProgress, {
+      toValue: progress,
       damping: 20,
       stiffness: 100,
       mass: 0.5,
-    })
+      useNativeDriver: false,
+    }).start()
   }, [progress])
 
-  const animatedBarStyle = useAnimatedStyle(() => ({
-    width: `${Math.min(barProgress.value * 100, 100)}%`,
-    backgroundColor: interpolateColor(
-      barProgress.value,
-      [0, 0.5, 1],
-      [Colors.primary, Colors.accent, Colors.success]
-    ),
-  }))
+  const animatedBarWidth = barProgress.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+    extrapolate: 'clamp',
+  })
 
   if (compact) {
     return (
@@ -65,13 +64,12 @@ export const XPBar = React.memo(function XPBar({ compact = false }: XPBarProps) 
           }}
         >
           <Animated.View
-            style={[
-              {
-                height: '100%',
-                borderRadius: BorderRadius.full,
-              },
-              animatedBarStyle,
-            ]}
+            style={{
+              height: '100%',
+              borderRadius: BorderRadius.full,
+              backgroundColor: barColor,
+              width: animatedBarWidth,
+            }}
           />
         </View>
       </View>
@@ -118,13 +116,12 @@ export const XPBar = React.memo(function XPBar({ compact = false }: XPBarProps) 
         }}
       >
         <Animated.View
-          style={[
-            {
-              height: '100%',
-              borderRadius: BorderRadius.full,
-            },
-            animatedBarStyle,
-          ]}
+          style={{
+            height: '100%',
+            borderRadius: BorderRadius.full,
+            backgroundColor: barColor,
+            width: animatedBarWidth,
+          }}
         />
       </View>
 

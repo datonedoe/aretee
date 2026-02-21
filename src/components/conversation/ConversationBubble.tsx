@@ -3,14 +3,8 @@
  * Distinct from Socratic bubbles — shows character avatar and name.
  */
 
-import { useEffect } from 'react'
-import { View, Text } from 'react-native'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withDelay,
-} from 'react-native-reanimated'
+import { useEffect, useRef } from 'react'
+import { View, Text, Animated } from 'react-native'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { Character } from '../../types/conversation'
 
@@ -30,37 +24,39 @@ export function ConversationBubble({
   index,
 }: ConversationBubbleProps) {
   const isUser = role === 'user'
-  const opacity = useSharedValue(0)
-  const translateY = useSharedValue(20)
+  const opacity = useRef(new Animated.Value(0)).current
+  const translateY = useRef(new Animated.Value(20)).current
 
   useEffect(() => {
     const delay = Math.min(index * 40, 150)
-    opacity.value = withDelay(
-      delay,
-      withSpring(1, { damping: 20, stiffness: 200 })
-    )
-    translateY.value = withDelay(
-      delay,
-      withSpring(0, { damping: 20, stiffness: 200 })
-    )
+    Animated.parallel([
+      Animated.spring(opacity, {
+        toValue: 1,
+        damping: 20,
+        stiffness: 200,
+        delay,
+        useNativeDriver: true,
+      }),
+      Animated.spring(translateY, {
+        toValue: 0,
+        damping: 20,
+        stiffness: 200,
+        delay,
+        useNativeDriver: true,
+      }),
+    ]).start()
   }, [index, opacity, translateY])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }))
 
   return (
     <Animated.View
-      style={[
-        {
-          flexDirection: 'row',
-          justifyContent: isUser ? 'flex-end' : 'flex-start',
-          marginBottom: Spacing.sm,
-          paddingHorizontal: Spacing.md,
-        },
-        animatedStyle,
-      ]}
+      style={{
+        flexDirection: 'row',
+        justifyContent: isUser ? 'flex-end' : 'flex-start',
+        marginBottom: Spacing.sm,
+        paddingHorizontal: Spacing.md,
+        opacity,
+        transform: [{ translateY }],
+      }}
     >
       {/* Character avatar */}
       {!isUser && (

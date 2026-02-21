@@ -1,16 +1,5 @@
-import { useEffect } from 'react'
-import { View, Text, Pressable, Dimensions } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  withTiming,
-  withDelay,
-  runOnJS,
-  FadeIn,
-  FadeOut,
-} from 'react-native-reanimated'
+import { useEffect, useRef } from 'react'
+import { View, Text, Pressable, Dimensions, Animated } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { getLevelForXP, LEVEL_DEFINITIONS } from '../../services/gamification'
@@ -21,52 +10,56 @@ interface LevelUpCelebrationProps {
   onDismiss: () => void
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window')
-
 export function LevelUpCelebration({ newLevel, onDismiss }: LevelUpCelebrationProps) {
   const levelDef = LEVEL_DEFINITIONS.find((d) => d.level === newLevel) ??
     LEVEL_DEFINITIONS[0]
 
-  const badgeScale = useSharedValue(0)
-  const titleOpacity = useSharedValue(0)
-  const unlockOpacity = useSharedValue(0)
-  const glowOpacity = useSharedValue(0)
+  const backdropOpacity = useRef(new Animated.Value(0)).current
+  const badgeScale = useRef(new Animated.Value(0)).current
+  const titleOpacity = useRef(new Animated.Value(0)).current
+  const unlockOpacity = useRef(new Animated.Value(0)).current
+  const glowOpacity = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
     hapticCelebration()
-    // Sequence: glow → badge pops in → title fades in → unlock fades in
-    glowOpacity.value = withSequence(
-      withTiming(0.6, { duration: 300 }),
-      withTiming(0.2, { duration: 1000 })
-    )
-    badgeScale.value = withDelay(
-      200,
-      withSpring(1, { damping: 8, stiffness: 150, mass: 0.8 })
-    )
-    titleOpacity.value = withDelay(500, withTiming(1, { duration: 400 }))
-    unlockOpacity.value = withDelay(800, withTiming(1, { duration: 400 }))
+
+    // Backdrop fade in
+    Animated.timing(backdropOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start()
+
+    // Glow sequence
+    Animated.sequence([
+      Animated.timing(glowOpacity, { toValue: 0.6, duration: 300, useNativeDriver: true }),
+      Animated.timing(glowOpacity, { toValue: 0.2, duration: 1000, useNativeDriver: true }),
+    ]).start()
+
+    // Badge pops in (delayed)
+    setTimeout(() => {
+      Animated.spring(badgeScale, {
+        toValue: 1,
+        damping: 8,
+        stiffness: 150,
+        mass: 0.8,
+        useNativeDriver: true,
+      }).start()
+    }, 200)
+
+    // Title fades in
+    setTimeout(() => {
+      Animated.timing(titleOpacity, { toValue: 1, duration: 400, useNativeDriver: true }).start()
+    }, 500)
+
+    // Unlock fades in
+    setTimeout(() => {
+      Animated.timing(unlockOpacity, { toValue: 1, duration: 400, useNativeDriver: true }).start()
+    }, 800)
   }, [])
-
-  const animatedBadge = useAnimatedStyle(() => ({
-    transform: [{ scale: badgeScale.value }],
-  }))
-
-  const animatedTitle = useAnimatedStyle(() => ({
-    opacity: titleOpacity.value,
-  }))
-
-  const animatedUnlock = useAnimatedStyle(() => ({
-    opacity: unlockOpacity.value,
-  }))
-
-  const animatedGlow = useAnimatedStyle(() => ({
-    opacity: glowOpacity.value,
-  }))
 
   return (
     <Animated.View
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(200)}
       style={{
         position: 'absolute',
         top: 0,
@@ -77,6 +70,7 @@ export function LevelUpCelebration({ newLevel, onDismiss }: LevelUpCelebrationPr
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 100,
+        opacity: backdropOpacity,
       }}
     >
       <Pressable
@@ -90,39 +84,35 @@ export function LevelUpCelebration({ newLevel, onDismiss }: LevelUpCelebrationPr
       >
         {/* Glow effect */}
         <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              width: 300,
-              height: 300,
-              borderRadius: 150,
-              backgroundColor: Colors.primary,
-            },
-            animatedGlow,
-          ]}
+          style={{
+            position: 'absolute',
+            width: 300,
+            height: 300,
+            borderRadius: 150,
+            backgroundColor: Colors.primary,
+            opacity: glowOpacity,
+          }}
         />
 
         {/* Badge */}
         <Animated.View
-          style={[
-            {
-              width: 120,
-              height: 120,
-              borderRadius: 60,
-              backgroundColor: Colors.primary + '30',
-              borderWidth: 3,
-              borderColor: Colors.primary,
-              justifyContent: 'center',
-              alignItems: 'center',
-            },
-            animatedBadge,
-          ]}
+          style={{
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            backgroundColor: Colors.primary + '30',
+            borderWidth: 3,
+            borderColor: Colors.primary,
+            justifyContent: 'center',
+            alignItems: 'center',
+            transform: [{ scale: badgeScale }],
+          }}
         >
           <Ionicons name="star" size={56} color={Colors.accent} />
         </Animated.View>
 
         {/* Level text */}
-        <Animated.View style={[{ alignItems: 'center', marginTop: Spacing.lg }, animatedTitle]}>
+        <Animated.View style={{ alignItems: 'center', marginTop: Spacing.lg, opacity: titleOpacity }}>
           <Text style={{ color: Colors.accent, fontSize: 16, fontWeight: '600', letterSpacing: 2 }}>
             LEVEL UP
           </Text>
@@ -137,18 +127,16 @@ export function LevelUpCelebration({ newLevel, onDismiss }: LevelUpCelebrationPr
         {/* Unlock text */}
         {levelDef.unlock ? (
           <Animated.View
-            style={[
-              {
-                marginTop: Spacing.xl,
-                backgroundColor: Colors.surface,
-                paddingHorizontal: Spacing.lg,
-                paddingVertical: Spacing.md,
-                borderRadius: BorderRadius.md,
-                borderWidth: 1,
-                borderColor: Colors.accent + '40',
-              },
-              animatedUnlock,
-            ]}
+            style={{
+              marginTop: Spacing.xl,
+              backgroundColor: Colors.surface,
+              paddingHorizontal: Spacing.lg,
+              paddingVertical: Spacing.md,
+              borderRadius: BorderRadius.md,
+              borderWidth: 1,
+              borderColor: Colors.accent + '40',
+              opacity: unlockOpacity,
+            }}
           >
             <Text style={{ color: Colors.textSecondary, fontSize: 12, textAlign: 'center' }}>
               UNLOCKED
@@ -159,7 +147,7 @@ export function LevelUpCelebration({ newLevel, onDismiss }: LevelUpCelebrationPr
           </Animated.View>
         ) : null}
 
-        <Animated.View style={[{ marginTop: Spacing.xxl }, animatedUnlock]}>
+        <Animated.View style={{ marginTop: Spacing.xxl, opacity: unlockOpacity }}>
           <Text style={{ color: Colors.textSecondary, fontSize: 13 }}>
             Tap to continue
           </Text>

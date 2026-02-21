@@ -1,13 +1,5 @@
-import { useEffect } from 'react'
-import { View } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withDelay,
-  Easing,
-} from 'react-native-reanimated'
+import { useEffect, useRef } from 'react'
+import { View, Animated, Easing } from 'react-native'
 import { Colors } from '../../utils/constants'
 
 interface WaveformVisualizerProps {
@@ -28,41 +20,64 @@ function WaveBar({
   height: number
   color: string
 }) {
-  const barHeight = useSharedValue(0.3)
+  const barHeight = useRef(new Animated.Value(0.3)).current
+  const animRef = useRef<Animated.CompositeAnimation | null>(null)
 
   useEffect(() => {
+    if (animRef.current) {
+      animRef.current.stop()
+    }
+
     if (isPlaying) {
-      barHeight.value = withDelay(
-        index * 80,
-        withRepeat(
-          withTiming(0.2 + Math.random() * 0.8, {
-            duration: 300 + Math.random() * 400,
+      const targetHeight = 0.2 + Math.random() * 0.8
+      const duration = 300 + Math.random() * 400
+
+      animRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(barHeight, {
+            toValue: targetHeight,
+            duration,
             easing: Easing.inOut(Easing.ease),
+            delay: index * 80,
+            useNativeDriver: false,
           }),
-          -1,
-          true
-        )
+          Animated.timing(barHeight, {
+            toValue: 0.2,
+            duration,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: false,
+          }),
+        ])
       )
+      animRef.current.start()
     } else {
-      barHeight.value = withTiming(0.15, { duration: 300 })
+      animRef.current = Animated.timing(barHeight, {
+        toValue: 0.15,
+        duration: 300,
+        useNativeDriver: false,
+      })
+      animRef.current.start()
+    }
+
+    return () => {
+      if (animRef.current) animRef.current.stop()
     }
   }, [isPlaying, index, barHeight])
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    height: barHeight.value * height,
-  }))
+  const animatedHeight = barHeight.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, height],
+  })
 
   return (
     <Animated.View
-      style={[
-        {
-          width: 3,
-          borderRadius: 1.5,
-          backgroundColor: color,
-          opacity: isPlaying ? 1 : 0.4,
-        },
-        animatedStyle,
-      ]}
+      style={{
+        width: 3,
+        borderRadius: 1.5,
+        backgroundColor: color,
+        opacity: isPlaying ? 1 : 0.4,
+        height: animatedHeight,
+      }}
     />
   )
 }

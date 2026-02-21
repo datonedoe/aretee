@@ -1,14 +1,5 @@
-import { useEffect } from 'react'
-import { View, Text, Pressable } from 'react-native'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withSequence,
-  withDelay,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated'
+import { useEffect, useRef } from 'react'
+import { View, Text, Pressable, Animated, Easing } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 
@@ -18,116 +9,111 @@ interface InsightRevealProps {
 }
 
 export function InsightReveal({ xpEarned, onDismiss }: InsightRevealProps) {
-  const scale = useSharedValue(0.3)
-  const opacity = useSharedValue(0)
-  const glowOpacity = useSharedValue(0)
-  const bulbScale = useSharedValue(0)
+  const scale = useRef(new Animated.Value(0.3)).current
+  const opacity = useRef(new Animated.Value(0)).current
+  const glowOpacity = useRef(new Animated.Value(0)).current
+  const bulbScale = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
     // Backdrop fade in
-    opacity.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.quad) })
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 300,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start()
 
     // Card spring in
-    scale.value = withSpring(1, { damping: 12, stiffness: 200, mass: 0.5 })
+    Animated.spring(scale, {
+      toValue: 1,
+      damping: 12,
+      stiffness: 200,
+      mass: 0.5,
+      useNativeDriver: true,
+    }).start()
 
-    // Bulb pulse
-    bulbScale.value = withDelay(
-      200,
-      withSequence(
-        withSpring(1.3, { damping: 8, stiffness: 300 }),
-        withSpring(1, { damping: 15, stiffness: 200 })
-      )
-    )
+    // Bulb pulse (delayed)
+    setTimeout(() => {
+      Animated.sequence([
+        Animated.spring(bulbScale, {
+          toValue: 1.3,
+          damping: 8,
+          stiffness: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(bulbScale, {
+          toValue: 1,
+          damping: 15,
+          stiffness: 200,
+          useNativeDriver: true,
+        }),
+      ]).start()
+    }, 200)
 
-    // Glow pulse
-    glowOpacity.value = withDelay(
-      300,
-      withSequence(
-        withTiming(0.8, { duration: 400 }),
-        withTiming(0.3, { duration: 600 }),
-        withTiming(0.6, { duration: 400 }),
-        withTiming(0.3, { duration: 600 })
-      )
-    )
+    // Glow pulse (delayed)
+    setTimeout(() => {
+      Animated.sequence([
+        Animated.timing(glowOpacity, { toValue: 0.8, duration: 400, useNativeDriver: true }),
+        Animated.timing(glowOpacity, { toValue: 0.3, duration: 600, useNativeDriver: true }),
+        Animated.timing(glowOpacity, { toValue: 0.6, duration: 400, useNativeDriver: true }),
+        Animated.timing(glowOpacity, { toValue: 0.3, duration: 600, useNativeDriver: true }),
+      ]).start()
+    }, 300)
   }, [scale, opacity, glowOpacity, bulbScale])
-
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }))
-
-  const cardStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }))
-
-  const bulbStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: bulbScale.value }],
-  }))
-
-  const glowStyle = useAnimatedStyle(() => ({
-    opacity: glowOpacity.value,
-  }))
 
   return (
     <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.7)',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 100,
-        },
-        backdropStyle,
-      ]}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 100,
+        opacity,
+      }}
     >
       <Animated.View
-        style={[
-          {
-            backgroundColor: Colors.surface,
-            borderRadius: BorderRadius.xl,
-            padding: Spacing.xl,
-            alignItems: 'center',
-            width: '85%',
-            maxWidth: 360,
-            borderWidth: 1,
-            borderColor: Colors.accent + '40',
-          },
-          cardStyle,
-        ]}
+        style={{
+          backgroundColor: Colors.surface,
+          borderRadius: BorderRadius.xl,
+          padding: Spacing.xl,
+          alignItems: 'center',
+          width: '85%',
+          maxWidth: 360,
+          borderWidth: 1,
+          borderColor: Colors.accent + '40',
+          transform: [{ scale }],
+        }}
       >
         {/* Glow ring */}
         <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: -20,
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: Colors.accent + '20',
-            },
-            glowStyle,
-          ]}
+          style={{
+            position: 'absolute',
+            top: -20,
+            width: 100,
+            height: 100,
+            borderRadius: 50,
+            backgroundColor: Colors.accent + '20',
+            opacity: glowOpacity,
+          }}
         />
 
         {/* Bulb icon */}
         <Animated.View
-          style={[
-            {
-              width: 72,
-              height: 72,
-              borderRadius: 36,
-              backgroundColor: Colors.accent + '20',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: Spacing.lg,
-            },
-            bulbStyle,
-          ]}
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: 36,
+            backgroundColor: Colors.accent + '20',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: Spacing.lg,
+            transform: [{ scale: bulbScale }],
+          }}
         >
           <Ionicons name="bulb" size={36} color={Colors.accent} />
         </Animated.View>

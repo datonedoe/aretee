@@ -1,12 +1,5 @@
-import { useEffect } from 'react'
-import { View, Text, ScrollView } from 'react-native'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withDelay,
-  withTiming,
-} from 'react-native-reanimated'
+import { useEffect, useRef } from 'react'
+import { View, Text, ScrollView, Animated } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import type { FeynmanGrade } from '../../services/ai/feynman'
@@ -50,28 +43,32 @@ function ScoreBar({
   feedback: string
   index: number
 }) {
-  const barWidth = useSharedValue(0)
+  const barWidth = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
-    barWidth.value = withDelay(
-      200 + index * 150,
-      withSpring(score, { damping: 15, stiffness: 100, mass: 0.8 })
-    )
+    const delay = 200 + index * 150
+    setTimeout(() => {
+      Animated.spring(barWidth, {
+        toValue: score,
+        damping: 15,
+        stiffness: 100,
+        mass: 0.8,
+        useNativeDriver: false,
+      }).start()
+    }, delay)
   }, [score, index, barWidth])
 
-  const animatedBarStyle = useAnimatedStyle(() => ({
-    width: `${barWidth.value}%`,
-  }))
+  const animatedBarWidth = barWidth.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['0%', '100%'],
+    extrapolate: 'clamp',
+  })
 
   const { label, icon, description } = DIMENSION_LABELS[dimension]
   const color = getScoreColor(score)
 
   return (
-    <View
-      style={{
-        marginBottom: Spacing.md,
-      }}
-    >
+    <View style={{ marginBottom: Spacing.md }}>
       <View
         style={{
           flexDirection: 'row',
@@ -82,36 +79,18 @@ function ScoreBar({
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Ionicons name={icon} size={14} color={color} />
-          <Text
-            style={{
-              color: Colors.text,
-              fontSize: 14,
-              fontWeight: '600',
-            }}
-          >
+          <Text style={{ color: Colors.text, fontSize: 14, fontWeight: '600' }}>
             {label}
           </Text>
-          <Text
-            style={{
-              color: Colors.textSecondary,
-              fontSize: 11,
-            }}
-          >
+          <Text style={{ color: Colors.textSecondary, fontSize: 11 }}>
             {description}
           </Text>
         </View>
-        <Text
-          style={{
-            color,
-            fontSize: 16,
-            fontWeight: '700',
-          }}
-        >
+        <Text style={{ color, fontSize: 16, fontWeight: '700' }}>
           {score}
         </Text>
       </View>
 
-      {/* Bar background */}
       <View
         style={{
           height: 8,
@@ -121,18 +100,15 @@ function ScoreBar({
         }}
       >
         <Animated.View
-          style={[
-            {
-              height: '100%',
-              backgroundColor: color,
-              borderRadius: 4,
-            },
-            animatedBarStyle,
-          ]}
+          style={{
+            height: '100%',
+            backgroundColor: color,
+            borderRadius: 4,
+            width: animatedBarWidth,
+          }}
         />
       </View>
 
-      {/* Feedback */}
       {feedback ? (
         <Text
           style={{
@@ -150,18 +126,26 @@ function ScoreBar({
 }
 
 export function GradeCard({ grade, xpEarned }: GradeCardProps) {
-  const overallScale = useSharedValue(0)
-  const overallOpacity = useSharedValue(0)
+  const overallScale = useRef(new Animated.Value(0)).current
+  const overallOpacity = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
-    overallScale.value = withDelay(100, withSpring(1, { damping: 12, stiffness: 150 }))
-    overallOpacity.value = withDelay(100, withTiming(1, { duration: 400 }))
+    setTimeout(() => {
+      Animated.parallel([
+        Animated.spring(overallScale, {
+          toValue: 1,
+          damping: 12,
+          stiffness: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(overallOpacity, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start()
+    }, 100)
   }, [overallScale, overallOpacity])
-
-  const overallAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: overallScale.value }],
-    opacity: overallOpacity.value,
-  }))
 
   const overallColor = getScoreColor(grade.overall)
 
@@ -174,13 +158,12 @@ export function GradeCard({ grade, xpEarned }: GradeCardProps) {
     >
       {/* Overall score circle */}
       <Animated.View
-        style={[
-          {
-            alignItems: 'center',
-            marginBottom: Spacing.lg,
-          },
-          overallAnimStyle,
-        ]}
+        style={{
+          alignItems: 'center',
+          marginBottom: Spacing.lg,
+          transform: [{ scale: overallScale }],
+          opacity: overallOpacity,
+        }}
       >
         <View
           style={{
@@ -194,23 +177,10 @@ export function GradeCard({ grade, xpEarned }: GradeCardProps) {
             alignItems: 'center',
           }}
         >
-          <Text
-            style={{
-              color: overallColor,
-              fontSize: 36,
-              fontWeight: '800',
-            }}
-          >
+          <Text style={{ color: overallColor, fontSize: 36, fontWeight: '800' }}>
             {grade.overall}
           </Text>
-          <Text
-            style={{
-              color: overallColor,
-              fontSize: 12,
-              fontWeight: '600',
-              opacity: 0.8,
-            }}
-          >
+          <Text style={{ color: overallColor, fontSize: 12, fontWeight: '600', opacity: 0.8 }}>
             / 100
           </Text>
         </View>
@@ -238,13 +208,7 @@ export function GradeCard({ grade, xpEarned }: GradeCardProps) {
             }}
           >
             <Ionicons name="flash" size={14} color={Colors.primary} />
-            <Text
-              style={{
-                color: Colors.primary,
-                fontSize: 14,
-                fontWeight: '700',
-              }}
-            >
+            <Text style={{ color: Colors.primary, fontSize: 14, fontWeight: '700' }}>
               +{xpEarned} XP
             </Text>
           </View>

@@ -1,15 +1,5 @@
-import { useEffect } from 'react'
-import { View, Text } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withDelay,
-  withTiming,
-  runOnJS,
-  SlideInUp,
-  SlideOutUp,
-} from 'react-native-reanimated'
+import { useEffect, useRef } from 'react'
+import { View, Text, Animated } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { AchievementDefinition, RARITY_COLORS } from '../../types'
@@ -22,23 +12,40 @@ interface AchievementToastProps {
 
 export function AchievementToast({ achievement, onDismiss }: AchievementToastProps) {
   const rarityColor = RARITY_COLORS[achievement.rarity]
+  const translateY = useRef(new Animated.Value(-200)).current
 
   useEffect(() => {
     hapticSuccess()
-    const timer = setTimeout(onDismiss, 4000)
+
+    // Slide in from top
+    Animated.spring(translateY, {
+      toValue: 0,
+      damping: 15,
+      stiffness: 150,
+      useNativeDriver: true,
+    }).start()
+
+    // Auto-dismiss after 4s (slide out)
+    const timer = setTimeout(() => {
+      Animated.timing(translateY, {
+        toValue: -200,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => onDismiss())
+    }, 4000)
+
     return () => clearTimeout(timer)
   }, [])
 
   return (
     <Animated.View
-      entering={SlideInUp.springify().damping(15).stiffness(150)}
-      exiting={SlideOutUp.duration(300)}
       style={{
         position: 'absolute',
         top: 60,
         left: Spacing.lg,
         right: Spacing.lg,
         zIndex: 200,
+        transform: [{ translateY }],
       }}
     >
       <View
