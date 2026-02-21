@@ -1,6 +1,3 @@
-// Polyfill crypto.getRandomValues for React Native (must be before uuid/other crypto consumers)
-import 'expo-crypto'
-
 import '../global.css'
 
 import { useEffect, useState } from 'react'

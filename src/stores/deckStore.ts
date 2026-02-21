@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { Card, Deck, ParsedCard, createCard, isCardDue } from '../types'
 import { CardParser } from '../services/srs/parser'
 import { getFileService } from '../services/platform'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'expo-crypto'
 import { isDemoMode, getDemoDecks } from '../utils/demo-data'
 
 interface DeckState {
@@ -55,7 +55,7 @@ export const useDeckStore = create<DeckState>((set, get) => ({
       const decks: Deck[] = []
 
       for (const [folderName, folderFiles] of folderGroups) {
-        const deckId = uuidv4()
+        const deckId = randomUUID()
         const cards: Card[] = []
 
         for (const filePath of folderFiles) {

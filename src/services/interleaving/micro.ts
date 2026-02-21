@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'expo-crypto'
 import { Card, Deck, isCardDue } from '../../types'
 import {
   MicroChallenge,
@@ -124,7 +124,7 @@ export class MicroChallengeScheduler {
     const { prompt, expectedAnswer } = this.buildChallengeContent(card, type)
 
     return {
-      id: uuidv4(),
+      id: randomUUID(),
       type,
       card,
       prompt,

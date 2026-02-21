@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'expo-crypto'
 import { Card, Deck, ReviewResponse } from '../../types'
 import { ErrorCategory, ErrorEvent, ErrorPattern } from '../../types/errors'
 
@@ -55,7 +55,7 @@ export class ErrorClassifier {
     )
 
     return {
-      id: uuidv4(),
+      id: randomUUID(),
       cardId: card.id,
       deckId: card.deckId,
       category,

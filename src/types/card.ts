@@ -1,5 +1,5 @@
 import { SyncStatus } from './enums'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'expo-crypto'
 
 /** FSRS card state */
 export enum CardState {
@@ -83,7 +83,7 @@ export function createCard(
 ): Card {
   const now = new Date()
   return {
-    id: uuidv4(),
+    id: randomUUID(),
     question: parsed.question,
     answer: parsed.answer,
     sourceFilePath,
