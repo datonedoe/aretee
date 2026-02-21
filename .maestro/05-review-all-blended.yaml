@@ -1,0 +1,37 @@
+appId: host.exp.Exponent
+---
+# Flow 5: Review All + Blended Session from home screen
+- launchApp:
+    appId: host.exp.Exponent
+
+# Navigate home
+- openLink: "exp://localhost:8081"
+- extendedWaitUntil:
+    visible: "Flash Mode"
+    timeout: 15000
+
+# Tap Review All button
+- tapOn: ".*Review All.*"
+- extendedWaitUntil:
+    visible: ".*"
+    timeout: 8000
+
+# Review a card if present
+- tapOn:
+    text: "Show Answer"
+    optional: true
+- tapOn:
+    text: "Good"
+    optional: true
+
+# Go back to home
+- openLink: "exp://localhost:8081"
+- extendedWaitUntil:
+    visible: "Flash Mode"
+    timeout: 8000
+
+# Tap Blended Session
+- tapOn: ".*Blended.*"
+- extendedWaitUntil:
+    visible: ".*"
+    timeout: 8000

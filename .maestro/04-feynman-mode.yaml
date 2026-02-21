@@ -1,0 +1,19 @@
+appId: host.exp.Exponent
+---
+# Flow 4: Feynman (Teach) Mode
+- launchApp:
+    appId: host.exp.Exponent
+
+# Navigate to Feynman review via deep link
+- openLink: "exp://localhost:8081/--/review/feynman?cardId=c1&deckId=deck-es"
+- extendedWaitUntil:
+    visible: ".*"
+    timeout: 12000
+
+# Browse the content
+- scroll:
+    direction: DOWN
+    duration: 800
+- scroll:
+    direction: UP
+    duration: 800

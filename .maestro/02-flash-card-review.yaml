@@ -1,0 +1,44 @@
+appId: host.exp.Exponent
+---
+# Flow 2: Flash Card Review — open Spanish deck, flip & grade cards
+- launchApp:
+    appId: host.exp.Exponent
+
+# Navigate to Flash Mode home
+- openLink: "exp://localhost:8081"
+- extendedWaitUntil:
+    visible: "Flash Mode"
+    timeout: 15000
+
+# Tap on Spanish Vocab deck (via accessibility text)
+- tapOn: "Spanish Vocab.*"
+- extendedWaitUntil:
+    visible: "Show Answer"
+    timeout: 8000
+
+# Card 1: flip and grade Good
+- tapOn: "Show Answer"
+- extendedWaitUntil:
+    visible: "Good"
+    timeout: 5000
+- tapOn: "Good"
+
+# Card 2: flip and grade Easy
+- extendedWaitUntil:
+    visible: "Show Answer"
+    timeout: 8000
+- tapOn: "Show Answer"
+- extendedWaitUntil:
+    visible: "Easy"
+    timeout: 5000
+- tapOn: "Easy"
+
+# Card 3: flip and grade Hard
+- extendedWaitUntil:
+    visible: "Show Answer"
+    timeout: 8000
+- tapOn: "Show Answer"
+- extendedWaitUntil:
+    visible: "Hard"
+    timeout: 5000
+- tapOn: "Hard"

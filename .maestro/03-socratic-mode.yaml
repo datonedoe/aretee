@@ -1,0 +1,20 @@
+appId: host.exp.Exponent
+---
+# Flow 3: Socratic Mode — type a response and interact
+- launchApp:
+    appId: host.exp.Exponent
+
+# Navigate to Socratic review via deep link
+- openLink: "exp://localhost:8081/--/review/socratic?cardId=c1&deckId=deck-es"
+- extendedWaitUntil:
+    visible: ".*thinking.*|.*Socratic.*|.*share.*"
+    timeout: 12000
+
+# Type a response
+- tapOn:
+    text: ".*hinking.*|.*hare.*"
+- inputText: "Hola means hello — it's the standard Spanish greeting"
+
+# Try to submit
+- tapOn:
+    point: "90%,88%"

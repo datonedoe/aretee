@@ -1,0 +1,77 @@
+appId: host.exp.Exponent
+---
+# Flow 1: Complete App Tour — every tab with scrolling
+- launchApp:
+    appId: host.exp.Exponent
+
+# Flash Mode (home)
+- openLink: "exp://localhost:8081"
+- extendedWaitUntil:
+    visible: "Flash Mode"
+    timeout: 15000
+- scroll:
+    direction: DOWN
+    duration: 600
+- scroll:
+    direction: UP
+    duration: 600
+
+# Listen tab (Audio Mode)
+- openLink: "exp://localhost:8081/--/listen"
+- extendedWaitUntil:
+    visible: "Audio Mode"
+    timeout: 8000
+
+# Immerse tab
+- openLink: "exp://localhost:8081/--/immerse"
+- extendedWaitUntil:
+    visible: ".*"
+    timeout: 8000
+- scroll:
+    direction: DOWN
+    duration: 600
+- scroll:
+    direction: UP
+    duration: 600
+
+# Converse tab
+- openLink: "exp://localhost:8081/--/converse"
+- extendedWaitUntil:
+    visible: ".*"
+    timeout: 8000
+
+# SkinUP tab
+- openLink: "exp://localhost:8081/--/skinup"
+- extendedWaitUntil:
+    visible: ".*"
+    timeout: 8000
+
+# Analytics tab
+- openLink: "exp://localhost:8081/--/analytics"
+- extendedWaitUntil:
+    visible: ".*"
+    timeout: 8000
+- scroll:
+    direction: DOWN
+    duration: 800
+- scroll:
+    direction: UP
+    duration: 800
+
+# Profile tab
+- openLink: "exp://localhost:8081/--/profile"
+- extendedWaitUntil:
+    visible: ".*"
+    timeout: 8000
+- scroll:
+    direction: DOWN
+    duration: 600
+- scroll:
+    direction: UP
+    duration: 600
+
+# Back to Flash
+- openLink: "exp://localhost:8081"
+- extendedWaitUntil:
+    visible: "Flash Mode"
+    timeout: 8000
