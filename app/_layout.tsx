@@ -11,8 +11,8 @@ import { useOnboardingStore } from '../src/stores/onboardingStore'
 import { Colors } from '../src/utils/constants'
 import { isDemoMode } from '../src/utils/demo-data'
 
-// Enable demo mode in dev builds (TEMP: forced on for simulator recordings)
-if (__DEV__) {
+// Enable demo mode in dev builds when EXPO_PUBLIC_DEMO is set
+if (__DEV__ && process.env.EXPO_PUBLIC_DEMO === '1') {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { enableDemoMode } = require('../src/utils/demo-data')
   enableDemoMode()
