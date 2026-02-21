@@ -10,7 +10,7 @@ appId: host.exp.Exponent
     visible: "Flash Mode"
     timeout: 15000
 
-# Tap on Spanish Vocab deck (via accessibility text)
+# Tap on Spanish Vocab deck
 - tapOn: "Spanish Vocab.*"
 - extendedWaitUntil:
     visible: "Show Answer"

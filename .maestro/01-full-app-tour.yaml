@@ -9,11 +9,11 @@ appId: host.exp.Exponent
 - extendedWaitUntil:
     visible: "Flash Mode"
     timeout: 15000
-- scroll:
-    direction: DOWN
-    duration: 600
-- scroll:
+- swipe:
     direction: UP
+    duration: 600
+- swipe:
+    direction: DOWN
     duration: 600
 
 # Listen tab (Audio Mode)
@@ -24,50 +24,40 @@ appId: host.exp.Exponent
 
 # Immerse tab
 - openLink: "exp://localhost:8081/--/immerse"
-- extendedWaitUntil:
-    visible: ".*"
-    timeout: 8000
-- scroll:
-    direction: DOWN
-    duration: 600
-- scroll:
+- waitForAnimationToEnd
+- swipe:
     direction: UP
+    duration: 600
+- swipe:
+    direction: DOWN
     duration: 600
 
 # Converse tab
 - openLink: "exp://localhost:8081/--/converse"
-- extendedWaitUntil:
-    visible: ".*"
-    timeout: 8000
+- waitForAnimationToEnd
 
 # SkinUP tab
 - openLink: "exp://localhost:8081/--/skinup"
-- extendedWaitUntil:
-    visible: ".*"
-    timeout: 8000
+- waitForAnimationToEnd
 
 # Analytics tab
 - openLink: "exp://localhost:8081/--/analytics"
-- extendedWaitUntil:
-    visible: ".*"
-    timeout: 8000
-- scroll:
-    direction: DOWN
-    duration: 800
-- scroll:
+- waitForAnimationToEnd
+- swipe:
     direction: UP
+    duration: 800
+- swipe:
+    direction: DOWN
     duration: 800
 
 # Profile tab
 - openLink: "exp://localhost:8081/--/profile"
-- extendedWaitUntil:
-    visible: ".*"
-    timeout: 8000
-- scroll:
-    direction: DOWN
-    duration: 600
-- scroll:
+- waitForAnimationToEnd
+- swipe:
     direction: UP
+    duration: 600
+- swipe:
+    direction: DOWN
     duration: 600
 
 # Back to Flash

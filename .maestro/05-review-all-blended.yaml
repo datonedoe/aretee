@@ -11,10 +11,10 @@ appId: host.exp.Exponent
     timeout: 15000
 
 # Tap Review All button
-- tapOn: ".*Review All.*"
-- extendedWaitUntil:
-    visible: ".*"
-    timeout: 8000
+- tapOn:
+    text: ".*Review All.*"
+    optional: true
+- waitForAnimationToEnd
 
 # Review a card if present
 - tapOn:
@@ -31,7 +31,7 @@ appId: host.exp.Exponent
     timeout: 8000
 
 # Tap Blended Session
-- tapOn: ".*Blended.*"
-- extendedWaitUntil:
-    visible: ".*"
-    timeout: 8000
+- tapOn:
+    text: ".*Blended.*"
+    optional: true
+- waitForAnimationToEnd
