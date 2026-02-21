@@ -1,0 +1,49 @@
+appId: host.exp.Exponent
+---
+# Flash Review Flow — walk through card review with grading
+- launchApp
+
+- waitForAnimationToEnd
+
+# Wait for Flash Mode home to appear
+- assertVisible: "Flash Mode"
+- assertVisible: "Review All"
+
+# Tap Review All
+- tapOn: "Review All.*"
+
+# Should see a flash card question
+- waitForAnimationToEnd
+- assertVisible: "QUESTION"
+
+# Tap Show Answer
+- tapOn: "Show Answer"
+- waitForAnimationToEnd
+
+# Should see grading buttons (Again, Hard, Good, Easy)
+- assertVisible: "Good"
+
+# Grade the card as Good
+- tapOn: "Good"
+- waitForAnimationToEnd
+
+# Next card should appear
+- assertVisible: "QUESTION"
+
+# Show answer again
+- tapOn: "Show Answer"
+- waitForAnimationToEnd
+
+# Grade as Easy
+- tapOn: "Easy"
+- waitForAnimationToEnd
+
+# One more card
+- assertVisible: "QUESTION"
+- tapOn: "Show Answer"
+- waitForAnimationToEnd
+- tapOn: "Hard"
+- waitForAnimationToEnd
+
+# Close the review (go back)
+- tapOn: "×"

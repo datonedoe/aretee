@@ -2,6 +2,7 @@ import { memo, useEffect, useRef } from 'react'
 import { View, Text, Pressable, Animated } from 'react-native'
 import { Colors, Spacing, BorderRadius } from '../../utils/constants'
 import { hapticMedium } from '../../services/haptics'
+import { MathText } from './MathText'
 
 interface FlashCardProps {
   question: string
@@ -69,17 +70,7 @@ export const FlashCard = memo(function FlashCard({ question, answer, isFlipped, 
           >
             Question
           </Text>
-          <Text
-            style={{
-              color: Colors.text,
-              fontSize: 20,
-              fontWeight: '500',
-              textAlign: 'center',
-              lineHeight: 30,
-            }}
-          >
-            {question}
-          </Text>
+          <MathText text={question} fontSize={20} color={Colors.text} textAlign="center" />
           <Text
             style={{
               color: Colors.textSecondary,
@@ -120,17 +111,7 @@ export const FlashCard = memo(function FlashCard({ question, answer, isFlipped, 
           >
             Answer
           </Text>
-          <Text
-            style={{
-              color: Colors.text,
-              fontSize: 20,
-              fontWeight: '500',
-              textAlign: 'center',
-              lineHeight: 30,
-            }}
-          >
-            {answer}
-          </Text>
+          <MathText text={answer} fontSize={20} color={Colors.text} textAlign="center" />
         </Animated.View>
       </View>
     </Pressable>

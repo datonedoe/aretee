@@ -102,7 +102,7 @@ export function getDemoDecks(): Deck[] {
         mkCard(
           'c9',
           'Black-Scholes equation?',
-          '∂V/∂t + ½σ²S²∂²V/∂S² + rS∂V/∂S - rV = 0',
+          '$\\frac{\\partial V}{\\partial t} + \\frac{1}{2}\\sigma^2 S^2 \\frac{\\partial^2 V}{\\partial S^2} + rS\\frac{\\partial V}{\\partial S} - rV = 0$',
           'deck-quant',
           { difficulty: 8, stability: 1.5, lapses: 3 }
         ),
@@ -116,7 +116,7 @@ export function getDemoDecks(): Deck[] {
         mkCard(
           'c11',
           'What is delta in options?',
-          'Rate of change of option price with respect to underlying price (∂V/∂S)',
+          'Rate of change of option price with respect to underlying price $\\left(\\frac{\\partial V}{\\partial S}\\right)$',
           'deck-quant',
           { difficulty: 4, stability: 3 }
         ),
