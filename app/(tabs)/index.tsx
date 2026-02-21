@@ -112,6 +112,20 @@ export default function FlashScreen() {
     [decks, router]
   )
 
+  // Memoize expensive per-deck due counts (must be before any conditional returns)
+  const deckDueCounts = useMemo(
+    () => new Map(decks.map((d) => [d.id, d.cards.filter(isCardDue).length])),
+    [decks]
+  )
+  const totalDue = useMemo(
+    () => Array.from(deckDueCounts.values()).reduce((a, b) => a + b, 0),
+    [deckDueCounts]
+  )
+  const totalCards = useMemo(
+    () => decks.reduce((sum, d) => sum + d.cards.length, 0),
+    [decks]
+  )
+
   if (!isLoaded) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -233,20 +247,6 @@ export default function FlashScreen() {
       </SafeAreaView>
     )
   }
-
-  // Memoize expensive per-deck due counts
-  const deckDueCounts = useMemo(
-    () => new Map(decks.map((d) => [d.id, d.cards.filter(isCardDue).length])),
-    [decks]
-  )
-  const totalDue = useMemo(
-    () => Array.from(deckDueCounts.values()).reduce((a, b) => a + b, 0),
-    [deckDueCounts]
-  )
-  const totalCards = useMemo(
-    () => decks.reduce((sum, d) => sum + d.cards.length, 0),
-    [decks]
-  )
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>

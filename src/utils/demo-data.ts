@@ -211,6 +211,9 @@ export function getDemoErrorEvents(): ErrorEvent[] {
 
 /** Activated by ?demo=true on web, or DEMO_MODE global in native dev builds */
 export function isDemoMode(): boolean {
+  // Native: global flag (set via enableDemoMode() or env) — check first
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((globalThis as any).__ARETEE_DEMO__) return true
   // Web: URL param
   if (typeof window !== 'undefined' && typeof window.location !== 'undefined') {
     try {
@@ -219,9 +222,7 @@ export function isDemoMode(): boolean {
       // RN doesn't have window.location.search
     }
   }
-  // Native: global flag (set via Metro dev console or env)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return !!(globalThis as any).__ARETEE_DEMO__
+  return false
 }
 
 /** Call once to enable demo mode in native builds */
