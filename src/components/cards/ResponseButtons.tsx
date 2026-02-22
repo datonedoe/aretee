@@ -6,6 +6,13 @@ import { formatInterval } from '../../utils/dates'
 import { Spacing, BorderRadius, Colors } from '../../utils/constants'
 import { hapticLight, hapticMedium, hapticSuccess, hapticError } from '../../services/haptics'
 
+const hexToRgba = (hex: string, alpha: number): string => {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 interface ResponseButtonsProps {
   currentInterval: number
   currentEase: number
@@ -66,39 +73,40 @@ export const ResponseButtons = memo(function ResponseButtons({
   )
 
   return (
-    <View style={{ width: '100%', gap: Spacing.sm }}>
-      <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
-        {RESPONSE_ORDER.map((response, index) => {
-          const color = ResponseColors[response]
-          return (
-            <Pressable
-              key={response}
-              onPress={() => { RESPONSE_HAPTICS[response](); onResponse(response) }}
-              style={({ pressed }) => ({
-                flex: 1,
-                backgroundColor: pressed ? color + '30' : color + '15',
-                borderRadius: BorderRadius.md,
-                paddingVertical: Spacing.md,
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: color + '40',
-              })}
-            >
-              <Text style={{ color, fontSize: 15, fontWeight: '700' }}>
-                {RESPONSE_LABELS[response]}
+    <View style={{ flexDirection: 'row', gap: 10, width: '100%' }}>
+      {RESPONSE_ORDER.map((response, index) => {
+        const color = ResponseColors[response]
+        return (
+          <Pressable
+            key={response}
+            onPress={() => { RESPONSE_HAPTICS[response](); onResponse(response) }}
+            style={({ pressed }) => ({
+              flex: 1,
+              backgroundColor: pressed ? Colors.surfaceLight : Colors.surface,
+              borderRadius: 14,
+              paddingVertical: 14,
+              paddingHorizontal: 4,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 2,
+              borderColor: pressed ? color : hexToRgba(color, 0.7),
+              minHeight: 58,
+            })}
+          >
+            <Text style={{ color, fontSize: 16, fontWeight: '700' }}>
+              {RESPONSE_LABELS[response]}
+            </Text>
+            <Text style={{ color: `${color}CC`, fontSize: 12, marginTop: 3, fontWeight: '600' }}>
+              {formatInterval(previews[response])}
+            </Text>
+            {Platform.OS === 'web' && (
+              <Text style={{ color: Colors.textSecondary, fontSize: 10, marginTop: 2 }}>
+                {index + 1}
               </Text>
-              <Text style={{ color: color + 'AA', fontSize: 11, marginTop: 2 }}>
-                {formatInterval(previews[response])}
-              </Text>
-              {Platform.OS === 'web' && (
-                <Text style={{ color: Colors.textSecondary, fontSize: 10, marginTop: 2 }}>
-                  {index + 1}
-                </Text>
-              )}
-            </Pressable>
-          )
-        })}
-      </View>
+            )}
+          </Pressable>
+        )
+      })}
     </View>
   )
 })
